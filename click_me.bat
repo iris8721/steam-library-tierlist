@@ -26,6 +26,8 @@ if not exist ".env" (
     echo Warning: .env file not found. Creating a sample .env file...
     echo STEAM_API_KEY=your_api_key_here > .env
     echo Created .env file. Please edit it to add your Steam API key.
+    echo If you don't have a Steam API key head over to https://steamcommunity.com/dev/apikey to get one.
+    echo It requires MFA to be enabled and the domain name can be anything you want, it's simply a name to remember what the key is being used for.
     notepad .env
     pause
     exit /b 1
@@ -35,6 +37,8 @@ findstr /C:"STEAM_API_KEY" .env > nul
 if %errorlevel% neq 0 (
     echo Error: STEAM_API_KEY not found in .env file.
     echo Please add your Steam API key to the .env file.
+    echo If you don't have a Steam API key head over to https://steamcommunity.com/dev/apikey to get one.
+    echo It requires MFA to be enabled and the domain name can be anything you want, it's simply a name to remember what the key is being used for.
     notepad .env
     pause
     exit /b 1
