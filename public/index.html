@@ -538,24 +538,56 @@
 				pointer-events: none;
 			}
 
-			/* Theme customization section */
 			.theme-section {
 				background-color: var(--container-bg);
 				border-radius: 5px;
 				padding: 15px;
 				margin: 20px 0;
+				transition: all 0.3s ease;
+			}
+
+			.theme-section.collapsed .theme-content {
+				display: none;
 			}
 
 			.theme-section h3 {
 				margin-top: 0;
+				margin-bottom: 0;
 				text-align: center;
 				color: var(--accent-color);
+				display: inline-block;
+			}
+
+			.theme-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.toggle-button {
+				padding: 10px 15px;
+				background-color: var(--accent-color);
+				color: var(--bg-color);
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+				transition: transform 0.2s, background-color 0.2s;
+				font-size: 14px;
+			}
+
+			.toggle-button:hover {
+				transform: scale(var(--btn-hover-scale));
+			}
+
+			.theme-content {
+				margin-top: 15px;
 			}
 
 			.theme-controls {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				grid-template-columns: repeat(4, 1fr);
 				gap: 15px;
+				margin-bottom: 15px;
 			}
 
 			.theme-control {
@@ -565,36 +597,50 @@
 			}
 
 			.theme-control label {
-				margin-bottom: 5px;
+				margin-bottom: 8px;
 				font-size: 14px;
 			}
 
 			.theme-control input[type='color'] {
-				width: 80px;
-				height: 30px;
-				background-color: var(--bg-color);
-				border: 1px solid var(--accent-color);
-				border-radius: 3px;
+				width: 40px;
+				height: 40px;
+				border: none;
+				border-radius: 50%;
+				background: none;
+				cursor: pointer;
+				padding: 0;
+				overflow: hidden;
+			}
+
+			.theme-control input[type='color']::-webkit-color-swatch-wrapper {
+				padding: 0;
+			}
+
+			.theme-control input[type='color']::-webkit-color-swatch {
+				border: none;
+				border-radius: 50%;
+				box-shadow: 0 0 0 2px var(--accent-color);
 			}
 
 			.preset-themes {
 				display: flex;
 				justify-content: center;
+				flex-wrap: wrap;
 				gap: 10px;
-				margin-top: 15px;
 			}
 
 			.preset-theme {
-				padding: 5px 10px;
-				border-radius: 3px;
+				padding: 10px 15px;
+				background-color: var(--accent-color);
+				color: var(--bg-color);
+				border: none;
+				border-radius: 5px;
 				cursor: pointer;
-				transition: transform 0.2s;
-				background-color: var(--bg-color);
-				border: 1px solid var(--accent-color);
+				transition: transform 0.2s, background-color 0.2s;
 			}
 
 			.preset-theme:hover {
-				transform: scale(1.05);
+				transform: scale(var(--btn-hover-scale));
 			}
 		</style>
 	</head>
@@ -611,32 +657,39 @@
 				<div id="loader" class="loader"></div>
 			</div>
 
-			<div class="theme-section">
-				<h3>Customize Theme</h3>
-				<div class="theme-controls">
-					<div class="theme-control">
-						<label for="bg-color-input">Background Color</label>
-						<input type="color" id="bg-color-input" value="#1b2838" />
-					</div>
-					<div class="theme-control">
-						<label for="text-color-input">Text Color</label>
-						<input type="color" id="text-color-input" value="#c7d5e0" />
-					</div>
-					<div class="theme-control">
-						<label for="accent-color-input">Accent Color</label>
-						<input type="color" id="accent-color-input" value="#66c0f4" />
-					</div>
-					<div class="theme-control">
-						<label for="container-bg-input">Container Color</label>
-						<input type="color" id="container-bg-input" value="#2a475e" />
-					</div>
+			<div class="theme-section collapsed">
+				<div class="theme-header">
+					<h3>Customize Theme</h3>
+					<button id="toggle-theme-section" class="toggle-button">Show Options</button>
 				</div>
-				<div class="preset-themes">
-					<button class="preset-theme" data-theme="steam">Steam (Default)</button>
-					<button class="preset-theme" data-theme="dark">Dark Mode</button>
-					<button class="preset-theme" data-theme="light">Light Mode</button>
-					<button class="preset-theme" data-theme="retro">Retro Gaming</button>
-					<button class="preset-theme" data-theme="cyberpunk">Cyberpunk</button>
+
+				<div class="theme-content">
+					<div class="theme-controls">
+						<div class="theme-control">
+							<label for="bg-color-input">Background</label>
+							<input type="color" id="bg-color-input" value="#1b2838" />
+						</div>
+						<div class="theme-control">
+							<label for="text-color-input">Text</label>
+							<input type="color" id="text-color-input" value="#c7d5e0" />
+						</div>
+						<div class="theme-control">
+							<label for="accent-color-input">Accent</label>
+							<input type="color" id="accent-color-input" value="#66c0f4" />
+						</div>
+						<div class="theme-control">
+							<label for="container-bg-input">Container</label>
+							<input type="color" id="container-bg-input" value="#2a475e" />
+						</div>
+					</div>
+
+					<div class="preset-themes">
+						<button class="preset-theme" data-theme="steam">Steam</button>
+						<button class="preset-theme" data-theme="dark">Dark</button>
+						<button class="preset-theme" data-theme="light">Light</button>
+						<button class="preset-theme" data-theme="retro">Retro</button>
+						<button class="preset-theme" data-theme="cyberpunk">Cyber</button>
+					</div>
 				</div>
 			</div>
 
@@ -1249,6 +1302,19 @@
 				steamIdInput.value = steamId;
 				loadGames();
 			}
+
+			const themeSection = document.querySelector('.theme-section');
+			const toggleButton = document.getElementById('toggle-theme-section');
+
+			toggleButton.addEventListener('click', function () {
+				themeSection.classList.toggle('collapsed');
+
+				if (themeSection.classList.contains('collapsed')) {
+					toggleButton.textContent = 'Show Options';
+				} else {
+					toggleButton.textContent = 'Hide Options';
+				}
+			});
 
 			console.log('Event listeners successfully attached');
 		});
