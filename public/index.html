@@ -5,17 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Library Tier List</title>
 <style>
+        :root {
+            --bg-color: #1b2838;
+            --text-color: #c7d5e0;
+            --accent-color: #66c0f4;
+            --container-bg: #2a475e;
+            --container-bg-alt: rgba(42, 71, 94, 0.5);
+            --container-bg-lite: rgba(42, 71, 94, 0.3);
+            --hover-bg: rgba(102, 192, 244, 0.2);
+            --success-bg: rgba(77, 255, 77, 0.3);
+            --error-bg: rgba(255, 77, 77, 0.3);
+            --btn-hover-scale: 1.05;
+            --achievement-color: #66c0f4;
+            --playtime-color: #8bc53f;
+            --font-family: Arial, sans-serif;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1b2838;
-            color: #c7d5e0;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 20px;
         }
         
         h1, h2 {
             text-align: center;
-            color: #66c0f4;
+            color: var(--accent-color);
         }
         
         .container {
@@ -24,7 +40,7 @@
         }
         
         .search-form {
-            background-color: #2a475e;
+            background-color: var(--container-bg);
             padding: 20px;
             border-radius: 5px;
             margin-bottom: 20px;
@@ -35,9 +51,9 @@
             padding: 10px;
             width: 300px;
             margin-right: 10px;
-            background-color: #1b2838;
-            border: 1px solid #66c0f4;
-            color: #c7d5e0;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            color: var(--text-color);
             border-radius: 3px;
         }
         
@@ -45,16 +61,16 @@
             padding: 10px;
             width: 120px;
             margin-right: 10px;
-            background-color: #1b2838;
-            border: 1px solid #66c0f4;
-            color: #c7d5e0;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            color: var(--text-color);
             border-radius: 3px;
         }
         
         .search-form button {
             padding: 10px 20px;
-            background-color: #66c0f4;
-            color: #1b2838;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
             border: none;
             border-radius: 3px;
             cursor: pointer;
@@ -62,7 +78,7 @@
         }
         
         .search-form button:hover {
-            transform: scale(1.05);
+            transform: scale(var(--btn-hover-scale));
         }
         
         .tier {
@@ -80,8 +96,8 @@
         }
         
         .tier-action-btn {
-            background-color: #2a475e;
-            color: #c7d5e0;
+            background-color: var(--container-bg);
+            color: var(--text-color);
             border: none;
             border-radius: 3px;
             width: 30px;
@@ -129,7 +145,7 @@
         
         .tier-items {
             flex-grow: 1;
-            background-color: rgba(42, 71, 94, 0.5);
+            background-color: var(--container-bg-alt);
             border-radius: 5px;
             padding: 10px;
             min-height: 120px;
@@ -139,7 +155,7 @@
         }
         
         .game-pool {
-            background-color: rgba(42, 71, 94, 0.3);
+            background-color: var(--container-bg-lite);
             border-radius: 5px;
             padding: 20px;
             margin-top: 20px;
@@ -151,7 +167,7 @@
         .game-card {
             width: 120px;
             height: 120px;
-            background-color: #2a475e;
+            background-color: var(--container-bg);
             border-radius: 5px;
             overflow: hidden;
             cursor: grab;
@@ -159,10 +175,25 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
         
         .game-card:hover {
             transform: scale(1.05);
+        }
+        
+        /* Tilt effect on hover */
+        .game-card .tilt-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            border-radius: 5px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
         }
         
         .game-image {
@@ -194,7 +225,7 @@
             bottom: 5px;
             left: 5px;
             font-size: 11px;
-            color: #8bc53f;
+            color: var(--playtime-color);
             background-color: rgba(0, 0, 0, 0.5);
             padding: 2px 4px;
             border-radius: 3px;
@@ -232,8 +263,8 @@
         .controls button {
             padding: 10px 15px;
             margin: 0 5px;
-            background-color: #66c0f4;
-            color: #1b2838;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -241,11 +272,11 @@
         }
         
         .controls button:hover {
-            transform: scale(1.05);
+            transform: scale(var(--btn-hover-scale));
         }
         
         .status-message {
-            background-color: #2a475e;
+            background-color: var(--container-bg);
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 10px;
@@ -254,11 +285,11 @@
         }
         
         .status-message.error {
-            background-color: rgba(255, 77, 77, 0.3);
+            background-color: var(--error-bg);
         }
         
         .status-message.success {
-            background-color: rgba(77, 255, 77, 0.3);
+            background-color: var(--success-bg);
         }
         
         .error-message {
@@ -267,7 +298,7 @@
         
         .loader {
             border: 5px solid #f3f3f3;
-            border-top: 5px solid #66c0f4;
+            border-top: 5px solid var(--accent-color);
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -286,7 +317,7 @@
         }
         
         .tier-items.drag-over {
-            background-color: rgba(102, 192, 244, 0.2);
+            background-color: var(--hover-bg);
         }
         
         .modal {
@@ -303,14 +334,14 @@
         }
         
         .modal-content {
-            background-color: #2a475e;
+            background-color: var(--container-bg);
             padding: 20px;
             border-radius: 5px;
             width: 350px;
         }
         
         .modal-title {
-            color: #66c0f4;
+            color: var(--accent-color);
             margin-top: 0;
             margin-bottom: 15px;
             font-size: 18px;
@@ -331,8 +362,8 @@
         .form-group input {
             width: 80%;
             padding: 8px;
-            background-color: #1b2838;
-            border: 1px solid #66c0f4;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
             color: white;
             border-radius: 3px;
             text-align: center;
@@ -369,8 +400,8 @@
             width: 60px;
             text-align: center;
             padding: 5px;
-            background-color: #1b2838;
-            border: 1px solid #66c0f4;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
             color: white;
             border-radius: 3px;
         }
@@ -380,7 +411,7 @@
             height: 50px;
             margin-top: 10px;
             border-radius: 5px;
-            border: 2px solid #66c0f4;
+            border: 2px solid var(--accent-color);
         }
         
         .preset-colors {
@@ -415,15 +446,15 @@
         .modal-buttons button {
             padding: 8px 16px;
             transition: transform 0.2s, background-color 0.2s;
-            background-color: #66c0f4;
-            color: #1b2838;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
             border: none;
             border-radius: 3px;
             cursor: pointer;
         }
         
         .modal-buttons button:hover {
-            transform: scale(1.05);
+            transform: scale(var(--btn-hover-scale));
         }
         
         /* Custom Game Modal Styles */
@@ -437,9 +468,9 @@
         }
 
         #custom-game-image {
-            background-color: #1b2838;
-            border: 1px solid #66c0f4;
-            color: #c7d5e0;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            color: var(--text-color);
             border-radius: 3px;
             width: 100%;
             padding: 8px;
@@ -467,7 +498,7 @@
         .steam-store-link svg {
             width: 14px;
             height: 14px;
-            fill: #66c0f4;
+            fill: var(--accent-color);
         }
 
         .game-card:hover .steam-store-link {
@@ -480,11 +511,70 @@
             bottom: 5px;
             right: 5px;
             font-size: 11px;
-            color: #66c0f4;
+            color: var(--achievement-color);
             background-color: rgba(0, 0, 0, 0.5);
             padding: 2px 4px;
             border-radius: 3px;
             pointer-events: none;
+        }
+        
+        /* Theme customization section */
+        .theme-section {
+            background-color: var(--container-bg);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .theme-section h3 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--accent-color);
+        }
+        
+        .theme-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .theme-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .theme-control label {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .theme-control input[type="color"] {
+            width: 80px;
+            height: 30px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 3px;
+        }
+        
+        .preset-themes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .preset-theme {
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background-color: var(--bg-color);
+            border: 1px solid var(--accent-color);
+        }
+        
+        .preset-theme:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -499,6 +589,35 @@
             <input type="number" id="min-hours-input" min="0" step="1" placeholder="Min Hrs Played" title="Minimum hours played">
             <button id="search-button">Load Games</button>
             <div id="loader" class="loader"></div>
+        </div>
+        
+        <div class="theme-section">
+            <h3>Customize Theme</h3>
+            <div class="theme-controls">
+                <div class="theme-control">
+                    <label for="bg-color-input">Background Color</label>
+                    <input type="color" id="bg-color-input" value="#1b2838">
+                </div>
+                <div class="theme-control">
+                    <label for="text-color-input">Text Color</label>
+                    <input type="color" id="text-color-input" value="#c7d5e0">
+                </div>
+                <div class="theme-control">
+                    <label for="accent-color-input">Accent Color</label>
+                    <input type="color" id="accent-color-input" value="#66c0f4">
+                </div>
+                <div class="theme-control">
+                    <label for="container-bg-input">Container Color</label>
+                    <input type="color" id="container-bg-input" value="#2a475e">
+                </div>
+            </div>
+            <div class="preset-themes">
+                <button class="preset-theme" data-theme="steam">Steam (Default)</button>
+                <button class="preset-theme" data-theme="dark">Dark Mode</button>
+                <button class="preset-theme" data-theme="light">Light Mode</button>
+                <button class="preset-theme" data-theme="retro">Retro Gaming</button>
+                <button class="preset-theme" data-theme="cyberpunk">Cyberpunk</button>
+            </div>
         </div>
         
         <div class="controls">
@@ -678,10 +797,18 @@
     const cancelCustomGameBtn = document.getElementById('cancel-custom-game-btn');
     const addCustomGameBtn = document.getElementById('add-custom-game-btn');
     
+    // Theme elements
+    const bgColorInput = document.getElementById('bg-color-input');
+    const textColorInput = document.getElementById('text-color-input');
+    const accentColorInput = document.getElementById('accent-color-input');
+    const containerBgInput = document.getElementById('container-bg-input');
+    const presetThemeButtons = document.querySelectorAll('.preset-theme');
+    
     // Variables
     let currentEditingTier = null;
     let selectedColor = null;
     let allGames = []; // Store all games for filtering
+    let steamUserId = null; // Store the resolved Steam user ID
     
     // Steam store icon SVG
     const steamIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -695,6 +822,101 @@
         '#7fbfff', '#7f7fff', '#bf7fff', '#ff7fff',
         '#ff7fbf', '#ffffff', '#cccccc', '#999999'
     ];
+    
+    // Preset themes
+    const themes = {
+        steam: {
+            bgColor: '#1b2838',
+            textColor: '#c7d5e0',
+            accentColor: '#66c0f4',
+            containerBg: '#2a475e'
+        },
+        dark: {
+            bgColor: '#121212',
+            textColor: '#ffffff',
+            accentColor: '#bb86fc',
+            containerBg: '#1e1e1e'
+        },
+        light: {
+            bgColor: '#f5f5f5',
+            textColor: '#333333',
+            accentColor: '#2196f3',
+            containerBg: '#ffffff'
+        },
+        retro: {
+            bgColor: '#0d0c1c',
+            textColor: '#f8e71c',
+            accentColor: '#ff0080',
+            containerBg: '#1a1934'
+        },
+        cyberpunk: {
+            bgColor: '#0a0a0a',
+            textColor: '#00ff41',
+            accentColor: '#ff003c',
+            containerBg: '#1f1f1f'
+        }
+    };
+    
+    // Initialize theme controls
+    function initializeThemeControls() {
+        // Set initial values
+        bgColorInput.value = getComputedStyle(document.documentElement).getPropertyValue('--bg-color').trim();
+        textColorInput.value = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+        accentColorInput.value = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+        containerBgInput.value = getComputedStyle(document.documentElement).getPropertyValue('--container-bg').trim();
+        
+        // Add event listeners
+        bgColorInput.addEventListener('input', updateTheme);
+        textColorInput.addEventListener('input', updateTheme);
+        accentColorInput.addEventListener('input', updateTheme);
+        containerBgInput.addEventListener('input', updateTheme);
+        
+        // Set up preset theme buttons
+        presetThemeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const themeName = button.dataset.theme;
+                if (themes[themeName]) {
+                    applyTheme(themes[themeName]);
+                }
+            });
+        });
+    }
+    
+    // Update theme based on input values
+    function updateTheme() {
+        const bgColor = bgColorInput.value;
+        const textColor = textColorInput.value;
+        const accentColor = accentColorInput.value;
+        const containerBg = containerBgInput.value;
+        
+        document.documentElement.style.setProperty('--bg-color', bgColor);
+        document.documentElement.style.setProperty('--text-color', textColor);
+        document.documentElement.style.setProperty('--accent-color', accentColor);
+        document.documentElement.style.setProperty('--container-bg', containerBg);
+        
+        // Calculate container-bg-alt (semi-transparent)
+        const containerRgb = hexToRgb(containerBg);
+        if (containerRgb) {
+            document.documentElement.style.setProperty('--container-bg-alt', `rgba(${containerRgb.r}, ${containerRgb.g}, ${containerRgb.b}, 0.5)`);
+            document.documentElement.style.setProperty('--container-bg-lite', `rgba(${containerRgb.r}, ${containerRgb.g}, ${containerRgb.b}, 0.3)`);
+        }
+        
+        // Calculate hover-bg (semi-transparent)
+        const accentRgb = hexToRgb(accentColor);
+        if (accentRgb) {
+            document.documentElement.style.setProperty('--hover-bg', `rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.2)`);
+        }
+    }
+    
+    // Apply a preset theme
+    function applyTheme(theme) {
+        bgColorInput.value = theme.bgColor;
+        textColorInput.value = theme.textColor;
+        accentColorInput.value = theme.accentColor;
+        containerBgInput.value = theme.containerBg;
+        
+        updateTheme();
+    }
     
     // Function to adjust tier label font size based on content
     function adjustTierLabelFontSize(label) {
@@ -744,10 +966,16 @@
     
     // RGB to Hex conversion
     function rgbToHex(r, g, b) {
+        if (typeof r === 'object') {
+            g = r.g;
+            b = r.b;
+            r = r.r;
+        }
+        
         return '#' + 
-            ('0' + r.toString(16)).slice(-2) +
-            ('0' + g.toString(16)).slice(-2) +
-            ('0' + b.toString(16)).slice(-2);
+            ('0' + Math.round(r).toString(16)).slice(-2) +
+            ('0' + Math.round(g).toString(16)).slice(-2) +
+            ('0' + Math.round(b).toString(16)).slice(-2);
     }
     
     // Hex to RGB conversion
@@ -910,6 +1138,34 @@
         showStatusMessage(`Added custom game: ${title}`, 'success');
     }
     
+    // Add tilt effect to game cards
+    function addTiltEffect(gameCard) {
+        const tiltEffect = document.createElement('div');
+        tiltEffect.className = 'tilt-effect';
+        gameCard.appendChild(tiltEffect);
+        
+        gameCard.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const deltaX = (x - centerX) / centerX;
+            const deltaY = (y - centerY) / centerY;
+            
+            const tiltX = deltaY * 10; // Tilt up/down (reversed)
+            const tiltY = -deltaX * 10; // Tilt left/right (reversed)
+            
+            tiltEffect.style.transform = `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+        });
+        
+        gameCard.addEventListener('mouseleave', function() {
+            tiltEffect.style.transform = 'rotateX(0) rotateY(0)';
+        });
+    }
+    
     // Add event listeners for tier actions
     function setupTierActions() {
         // Move tier up
@@ -991,6 +1247,9 @@
         // Initialize custom game modal
         initCustomGameModal();
         
+        // Initialize theme controls
+        initializeThemeControls();
+        
         // Set up drag and drop
         setupDragAndDrop();
         
@@ -1037,7 +1296,6 @@
                 apiEndpoint += `steamid=${profileId}`;
             }
         } else {
-            // Assume it's a vanity URL name
             apiEndpoint += `vanity=${steamId}`;
         }
         
@@ -1059,10 +1317,12 @@
                     throw new Error('No games found or profile is private');
                 }
                 
-                // Store all games
                 allGames = games;
                 
-                // Filter games by minimum hours
+                if (games.length > 0 && games[0].steamid) {
+                    steamUserId = games[0].steamid;
+                }
+                
                 const filteredGames = games.filter(game => game.playtime >= minHours);
                 
                 if (filteredGames.length === 0) {
@@ -1071,16 +1331,42 @@
                     return;
                 }
                 
-                // Clear game pool
                 gamePool.innerHTML = '';
                 
-                // Create game cards
-                filteredGames.forEach(game => {
-                    const gameCard = createGameCard(game);
-                    gamePool.appendChild(gameCard);
+                // Create game cards and load achievements
+                const gamePromises = filteredGames.map(game => {
+                    return new Promise(resolve => {
+
+                        const gameCard = createGameCard(game);
+                        gamePool.appendChild(gameCard);
+                        console.log(steamUserId)
+                        console.log(!game.isCustom)
+                        if (steamUserId && !game.isCustom) {
+                            console.log("achievements fetched")
+                            fetchAchievements(game.appid, steamUserId)
+                                .then(achievements => {
+                                    if (achievements && achievements.total > 0) {
+                                        // Add achievements to the game card
+                                        const gameAchievements = document.createElement('div');
+                                        gameAchievements.className = 'game-achievements';
+                                        gameAchievements.textContent = `${achievements.earned}/${achievements.total}`;
+                                        gameCard.appendChild(gameAchievements);
+                                    }
+                                    resolve();
+                                })
+                                .catch(() => {
+                                    // If achievements fail to load, just continue
+                                    resolve();
+                                });
+                        } else {
+                            resolve();
+                        }
+                    });
                 });
                 
-                showStatusMessage(`Loaded ${filteredGames.length} games with ${minHours}+ hours (${games.length} total)`, 'success');
+                Promise.all(gamePromises).then(() => {
+                    showStatusMessage(`Loaded ${filteredGames.length} games with ${minHours}+ hours (${games.length} total)`, 'success');
+                });
             })
             .catch(error => {
                 showStatusMessage(`Error: ${error.message}`, 'error');
@@ -1090,9 +1376,37 @@
             });
     }
     
+    // Fetch achievements for a game
+    async function fetchAchievements(appId, steamId) {
+        try {
+            const response = await fetch(`/api/achievements?appid=${appId}&steamid=${steamId}`);
+            console.log(response)
+            if (!response.ok) {
+                return null;
+            }
+            
+            const data = await response.json();
+            if (!data || !data.playerstats || !data.playerstats.achievements) {
+                return null;
+            }
+            
+            const achievements = data.playerstats.achievements;
+            const total = achievements.length;
+            const earned = achievements.filter(a => a.achieved === 1).length;
+            
+            return {
+                earned,
+                total,
+                hasAchievements: total > 0
+            };
+        } catch (error) {
+            console.error('Error fetching achievements:', error);
+            return null;
+        }
+    }
+    
     // Create a game card element
     function createGameCard(game) {
-        console.log(1)
         const gameCard = document.createElement('div');
         gameCard.className = 'game-card';
         gameCard.draggable = true;
@@ -1107,6 +1421,7 @@
         gameTooltip.textContent = game.name;
         gameCard.appendChild(gameTooltip);
         
+        // Steam store link (only for non-custom games)
         if (!game.isCustom) {
             const storeLink = document.createElement('div');
             storeLink.className = 'steam-store-link';
@@ -1125,21 +1440,25 @@
         if (!game.isCustom) {
             gameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`;
         } else {
+            // For custom games without images, use a placeholder
             gameImage.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22120%22%20height%3D%2256%22%3E%3Crect%20width%3D%22120%22%20height%3D%2256%22%20fill%3D%22%23424242%22%2F%3E%3Ctext%20x%3D%2260%22%20y%3D%2228%22%20font-family%3D%22Arial%22%20font-size%3D%2212%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%3ECustom%20Game%3C%2Ftext%3E%3C%2Fsvg%3E';
         }
         gameImage.alt = game.name;
-        gameImage.crossOrigin = "anonymous";
+        gameImage.crossOrigin = "anonymous"; // Allow cross-origin loading
         gameImage.onerror = function() {
+            // Using data URI instead of placeholder.com which seems to be unreachable
             this.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22120%22%20height%3D%2256%22%3E%3Crect%20width%3D%22120%22%20height%3D%2256%22%20fill%3D%22%23424242%22%2F%3E%3Ctext%20x%3D%2260%22%20y%3D%2228%22%20font-family%3D%22Arial%22%20font-size%3D%2212%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
         };
         gameCard.appendChild(gameImage);
         
+        // Game name
         const gameName = document.createElement('div');
         gameName.className = 'game-name';
         gameName.title = game.name;
         gameName.textContent = game.name;
         gameCard.appendChild(gameName);
         
+        // Game playtime
         const gamePlaytime = document.createElement('div');
         gamePlaytime.className = 'game-playtime';
         
@@ -1156,13 +1475,16 @@
         gamePlaytime.textContent = playtimeText;
         gameCard.appendChild(gamePlaytime);
         
-        console.log(game)
+        // Achievements (if provided for custom games)
         if (game.achievements && game.achievements.hasAchievements) {
             const gameAchievements = document.createElement('div');
             gameAchievements.className = 'game-achievements';
             gameAchievements.textContent = `${game.achievements.earned}/${game.achievements.total}`;
             gameCard.appendChild(gameAchievements);
         }
+        
+        // Add tilt effect
+        addTiltEffect(gameCard);
         
         // Set up drag events
         gameCard.addEventListener('dragstart', handleDragStart);
@@ -1246,7 +1568,8 @@
             const distance = Math.sqrt(horizontalOffset * horizontalOffset + verticalOffset * verticalOffset);
             
             // Only consider elements that are "ahead" of the mouse
-            if (horizontalOffset > 0) return closest;
+// Only consider elements that are "ahead" of the mouse
+if (horizontalOffset > 0) return closest;
             
             // If this element is closer than the current closest, update closest
             if (distance < closest.distance) {
@@ -1462,12 +1785,12 @@
     function saveTierListAsImage() {
         // Create a container with all tiers (including empty ones)
         const tempContainer = document.createElement('div');
-        tempContainer.style.backgroundColor = '#1b2838';
+        tempContainer.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
         tempContainer.style.padding = '20px';
         
         const title = document.createElement('h1');
         title.textContent = 'Steam Library Tier List';
-        title.style.color = '#66c0f4';
+        title.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
         title.style.textAlign = 'center';
         tempContainer.appendChild(title);
         
@@ -1518,6 +1841,11 @@
                         link.style.display = 'none';
                     });
                     
+                    // Remove tilt effects
+                    tierClone.querySelectorAll('.tilt-effect').forEach(effect => {
+                        effect.remove();
+                    });
+                    
                     // Apply export-specific styles to the clone
                     tierClone.querySelectorAll('.game-card').forEach(card => {
                         card.classList.add('clone-for-export');
@@ -1543,14 +1871,15 @@
                 
                 // Use html2canvas with proper settings
                 return html2canvas(tempContainer, {
-                    backgroundColor: '#1b2838',
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-color'),
                     scale: 2,
                     logging: true,
-                    useCORS: true,
-                    allowTaint: true
+                    useCORS: true, // Important for loading images from external domains
+                    allowTaint: true // Allow using images from other domains
                 });
             })
             .then(canvas => {
+                // Create download link
                 const link = document.createElement('a');
                 link.download = 'steam-tier-list.png';
                 link.href = canvas.toDataURL('image/png');
@@ -1569,8 +1898,8 @@
             });
     }
     
-// Show status message
-function showStatusMessage(message, type) {
+    // Show status message
+    function showStatusMessage(message, type) {
         statusMessage.textContent = message;
         statusMessage.style.display = 'block';
         

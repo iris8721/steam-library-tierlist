@@ -28,6 +28,71 @@ fs.copyFile(
 app.use(express.static(publicPath));
 app.use(express.json());
 
+// Add this API endpoint for achievements
+app.get('/api/achievements', async (req, res) => {
+    try {
+        const appId = req.query.appid;
+        const steamId = req.query.steamid;
+        const vanityUrl = req.query.vanity;
+        
+        if (!appId || (!steamId && !vanityUrl)) {
+            return res.status(400).json({
+                success: false,
+                message: 'App ID and either Steam ID or Vanity URL are required'
+            });
+        }
+        
+        if (!STEAM_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                message: 'Steam API key is not configured on the server'
+            });
+        }
+        
+        let resolvedSteamId = steamId;
+        
+        // If vanity URL is provided, resolve it to a SteamID64
+        if (vanityUrl && !steamId) {
+            try {
+                console.log(`Resolving vanity URL for achievements: ${vanityUrl}`);
+                const resolveUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${STEAM_API_KEY}&vanityurl=${encodeURIComponent(vanityUrl)}`;
+                
+                const response = await axios.get(resolveUrl);
+                
+                if (response.data.response && response.data.response.success === 1) {
+                    resolvedSteamId = response.data.response.steamid;
+                    console.log(`Resolved to Steam ID: ${resolvedSteamId}`);
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Could not resolve vanity URL to a Steam ID'
+                    });
+                }
+            } catch (error) {
+                console.error('Error resolving vanity URL for achievements:', error.message);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error resolving vanity URL'
+                });
+            }
+        }
+        
+        const url = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${appId}&key=${STEAM_API_KEY}&steamid=${resolvedSteamId}`;
+        
+        const response = await axios.get(url);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error fetching achievements:', error.message);
+        
+        // Return empty achievements rather than error to prevent breaking the UI
+        res.json({
+            playerstats: {
+                achievements: []
+            }
+        });
+    }
+});
+
 app.get('/api/games', async (req, res) => {
     try {
         console.log('API request received with query:', req.query);
