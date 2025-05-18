@@ -28,71 +28,6 @@ fs.copyFile(
 app.use(express.static(publicPath));
 app.use(express.json());
 
-// Add this API endpoint for achievements
-app.get('/api/achievements', async (req, res) => {
-    try {
-        const appId = req.query.appid;
-        const steamId = req.query.steamid;
-        const vanityUrl = req.query.vanity;
-        
-        if (!appId || (!steamId && !vanityUrl)) {
-            return res.status(400).json({
-                success: false,
-                message: 'App ID and either Steam ID or Vanity URL are required'
-            });
-        }
-        
-        if (!STEAM_API_KEY) {
-            return res.status(500).json({
-                success: false,
-                message: 'Steam API key is not configured on the server'
-            });
-        }
-        
-        let resolvedSteamId = steamId;
-        
-        // If vanity URL is provided, resolve it to a SteamID64
-        if (vanityUrl && !steamId) {
-            try {
-                console.log(`Resolving vanity URL for achievements: ${vanityUrl}`);
-                const resolveUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${STEAM_API_KEY}&vanityurl=${encodeURIComponent(vanityUrl)}`;
-                
-                const response = await axios.get(resolveUrl);
-                
-                if (response.data.response && response.data.response.success === 1) {
-                    resolvedSteamId = response.data.response.steamid;
-                    console.log(`Resolved to Steam ID: ${resolvedSteamId}`);
-                } else {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Could not resolve vanity URL to a Steam ID'
-                    });
-                }
-            } catch (error) {
-                console.error('Error resolving vanity URL for achievements:', error.message);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Error resolving vanity URL'
-                });
-            }
-        }
-        
-        const url = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${appId}&key=${STEAM_API_KEY}&steamid=${resolvedSteamId}`;
-        
-        const response = await axios.get(url);
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching achievements:', error.message);
-        
-        // Return empty achievements rather than error to prevent breaking the UI
-        res.json({
-            playerstats: {
-                achievements: []
-            }
-        });
-    }
-});
-
 app.get('/api/games', async (req, res) => {
     try {
         console.log('API request received with query:', req.query);
@@ -110,7 +45,7 @@ app.get('/api/games', async (req, res) => {
         
         if (vanityUrl && !steamId) {
             try {
-                console.log(`Resolving vanity URL: ${vanityUrl}`);
+                console.log(`Resolving vanity URL: "${vanityUrl}"`);
                 const resolveUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${STEAM_API_KEY}&vanityurl=${encodeURIComponent(vanityUrl)}`;
                 
                 const response = await axios.get(resolveUrl);
@@ -118,19 +53,20 @@ app.get('/api/games', async (req, res) => {
                 
                 if (response.data.response && response.data.response.success === 1) {
                     steamId = response.data.response.steamid;
-                    console.log(`Resolved to Steam ID: ${steamId}`);
+                    console.log(`Successfully resolved vanity URL "${vanityUrl}" to Steam ID: ${steamId}`);
                 } else {
-                    console.error('Failed to resolve vanity URL');
+                    const errorCode = response.data.response ? response.data.response.success : 'unknown';
+                    console.error(`Failed to resolve vanity URL "${vanityUrl}", error code: ${errorCode}`);
                     return res.status(400).json({ 
                         success: false, 
-                        message: 'Could not resolve vanity URL to a Steam ID' 
+                        message: `Could not resolve vanity URL "${vanityUrl}" to a Steam ID. Make sure the vanity URL is correct.` 
                     });
                 }
             } catch (error) {
-                console.error('Error resolving vanity URL:', error.message);
+                console.error(`Error resolving vanity URL "${vanityUrl}":`, error.message);
                 return res.status(500).json({ 
                     success: false, 
-                    message: 'Error resolving vanity URL' 
+                    message: `Error resolving vanity URL "${vanityUrl}". Server error: ${error.message}` 
                 });
             }
         }
@@ -174,7 +110,7 @@ app.get('/api/games', async (req, res) => {
         
         games.sort((a, b) => a.name.localeCompare(b.name));
         
-        console.log(`Returning ${games.length} games`);
+        console.log(`Returning ${games.length} games for Steam ID ${steamId}`);
         res.json(games);
         
     } catch (error) {
