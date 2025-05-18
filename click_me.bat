@@ -5,6 +5,7 @@ cd /d %PROJECT_PATH%
 where node >nul 2>nul
 if %errorlevel% neq 0 (
     echo Error: Node.js is not installed or not found in PATH.
+    echo https://nodejs.org/en/download
     pause
     exit /b 1
 )
@@ -12,12 +13,14 @@ if %errorlevel% neq 0 (
 where npm >nul 2>nul
 if %errorlevel% neq 0 (
     echo Error: npm is not installed or not found in PATH.
+    echo https://nodejs.org/en/download
     pause
     exit /b 1
 )
 
 if not exist "server.js" (
     echo Error: server.js not found in the current directory.
+    echo https://github.com/iris872/steam-library-tierlist
     pause
     exit /b 1
 )
