@@ -70,6 +70,41 @@
             margin-bottom: 10px;
             min-height: 120px;
             align-items: stretch;
+            position: relative;
+        }
+        
+        .tier-actions {
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px;
+        }
+        
+        .tier-action-btn {
+            background-color: #2a475e;
+            color: #c7d5e0;
+            border: none;
+            border-radius: 3px;
+            width: 30px;
+            height: 30px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+        
+        .tier-action-btn:hover {
+            background-color: #3d6c8d;
+        }
+        
+        .tier-action-btn.delete {
+            background-color: #8b3a3a;
+        }
+        
+        .tier-action-btn.delete:hover {
+            background-color: #b54b4b;
         }
         
         .tier-label {
@@ -271,7 +306,7 @@
             background-color: #2a475e;
             padding: 20px;
             border-radius: 5px;
-            width: 300px;
+            width: 350px;
         }
         
         .modal-title {
@@ -305,26 +340,69 @@
             display: block;
         }
         
-        .color-options {
+        .color-picker-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .rgb-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+        
+        .rgb-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .rgb-input label {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .rgb-input input {
+            width: 60px;
+            text-align: center;
+            padding: 5px;
+            background-color: #1b2838;
+            border: 1px solid #66c0f4;
+            color: white;
+            border-radius: 3px;
+        }
+        
+        .color-preview {
+            width: 100px;
+            height: 50px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 2px solid #66c0f4;
+        }
+        
+        .preset-colors {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 15px;
             width: 90%;
             margin-left: auto;
             margin-right: auto;
         }
         
-        .color-option {
+        .preset-color {
             width: 100%;
             height: 30px;
             border-radius: 3px;
             cursor: pointer;
+            transition: transform 0.2s;
         }
         
-        .color-option.selected {
-            transform: scale(0.9);
-            box-shadow: 0 0 0 2px white;
+        .preset-color:hover {
+            transform: scale(1.1);
         }
         
         .modal-buttons {
@@ -337,10 +415,76 @@
         .modal-buttons button {
             padding: 8px 16px;
             transition: transform 0.2s, background-color 0.2s;
+            background-color: #66c0f4;
+            color: #1b2838;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
         }
         
         .modal-buttons button:hover {
             transform: scale(1.05);
+        }
+        
+        /* Custom Game Modal Styles */
+        #image-preview-container {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        #custom-game-image {
+            background-color: #1b2838;
+            border: 1px solid #66c0f4;
+            color: #c7d5e0;
+            border-radius: 3px;
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        /* Steam Store Link Icon */
+        .steam-store-link {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+
+        .steam-store-link svg {
+            width: 14px;
+            height: 14px;
+            fill: #66c0f4;
+        }
+
+        .game-card:hover .steam-store-link {
+            opacity: 1;
+        }
+
+        /* Achievements display */
+        .game-achievements {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 11px;
+            color: #66c0f4;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 2px 4px;
+            border-radius: 3px;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -359,27 +503,52 @@
         
         <div class="controls">
             <button id="add-tier-button">Add Tier</button>
+            <button id="add-custom-game-button">Add Custom Game</button>
             <button id="reset-button">Reset Tier List</button>
             <button id="save-button">Save as Image</button>
         </div>
         
         <div id="tier-list">
+            <!-- S Tier -->
             <div class="tier">
+                <div class="tier-actions">
+                    <button class="tier-action-btn move-up" title="Move Up">↑</button>
+                    <button class="tier-action-btn move-down" title="Move Down">↓</button>
+                    <button class="tier-action-btn delete" title="Delete Tier">×</button>
+                </div>
                 <div class="tier-label" style="background-color: #ff7f7f;">S</div>
                 <div class="tier-items" data-tier="S"></div>
             </div>
             
+            <!-- A Tier -->
             <div class="tier">
+                <div class="tier-actions">
+                    <button class="tier-action-btn move-up" title="Move Up">↑</button>
+                    <button class="tier-action-btn move-down" title="Move Down">↓</button>
+                    <button class="tier-action-btn delete" title="Delete Tier">×</button>
+                </div>
                 <div class="tier-label" style="background-color: #ffbf7f;">A</div>
                 <div class="tier-items" data-tier="A"></div>
             </div>
             
+            <!-- B Tier -->
             <div class="tier">
+                <div class="tier-actions">
+                    <button class="tier-action-btn move-up" title="Move Up">↑</button>
+                    <button class="tier-action-btn move-down" title="Move Down">↓</button>
+                    <button class="tier-action-btn delete" title="Delete Tier">×</button>
+                </div>
                 <div class="tier-label" style="background-color: #ffdf7f;">B</div>
                 <div class="tier-items" data-tier="B"></div>
             </div>
             
+            <!-- C Tier -->
             <div class="tier">
+                <div class="tier-actions">
+                    <button class="tier-action-btn move-up" title="Move Up">↑</button>
+                    <button class="tier-action-btn move-down" title="Move Down">↓</button>
+                    <button class="tier-action-btn delete" title="Delete Tier">×</button>
+                </div>
                 <div class="tier-label" style="background-color: #bfff7f;">C</div>
                 <div class="tier-items" data-tier="C"></div>
             </div>
@@ -389,20 +558,84 @@
         <div id="game-pool" class="game-pool"></div>
     </div>
     
+    <!-- Edit Tier Modal -->
     <div id="edit-tier-modal" class="modal">
         <div class="modal-content">
             <div class="modal-title">Edit Tier</div>
+            
             <div class="form-group">
                 <label for="tier-name-input">Tier Name:</label>
                 <input type="text" id="tier-name-input" maxlength="15">
             </div>
+            
             <div class="form-group">
                 <label>Tier Color:</label>
-                <div id="color-options" class="color-options"></div>
+                
+                <div class="color-picker-container">
+                    <div class="rgb-inputs">
+                        <div class="rgb-input">
+                            <label>R</label>
+                            <input type="number" id="red-input" min="0" max="255" value="255">
+                        </div>
+                        <div class="rgb-input">
+                            <label>G</label>
+                            <input type="number" id="green-input" min="0" max="255" value="127">
+                        </div>
+                        <div class="rgb-input">
+                            <label>B</label>
+                            <input type="number" id="blue-input" min="0" max="255" value="127">
+                        </div>
+                    </div>
+                    
+                    <div id="color-preview" class="color-preview"></div>
+                    
+                    <label style="margin-top: 15px;">Preset Colors:</label>
+                    <div id="preset-colors" class="preset-colors"></div>
+                </div>
             </div>
+            
             <div class="modal-buttons">
                 <button id="cancel-edit-btn">Cancel</button>
                 <button id="save-tier-btn">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom Game Modal -->
+    <div id="custom-game-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Add Custom Game</div>
+            
+            <div class="form-group">
+                <label for="custom-game-title">Game Title (Required):</label>
+                <input type="text" id="custom-game-title" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-game-image">Game Image:</label>
+                <input type="file" id="custom-game-image" accept="image/*">
+                <div id="image-preview-container" style="margin-top: 10px; display: none;">
+                    <img id="image-preview" style="max-width: 100%; max-height: 150px; border-radius: 5px;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-game-hours">Hours Played (Optional):</label>
+                <input type="number" id="custom-game-hours" min="0" step="0.1" placeholder="e.g. 42.5">
+            </div>
+            
+            <div class="form-group">
+                <label for="custom-game-achievements">Achievements (Optional):</label>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <input type="number" id="custom-game-achievements-earned" min="0" placeholder="Earned" style="width: 30%;">
+                    <span style="align-self: center;">/</span>
+                    <input type="number" id="custom-game-achievements-total" min="0" placeholder="Total" style="width: 30%;">
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="cancel-custom-game-btn">Cancel</button>
+                <button id="add-custom-game-btn">Add Game</button>
             </div>
         </div>
     </div>
@@ -411,6 +644,7 @@
 </body>
 
 <script>
+    // Elements
     const steamIdInput = document.getElementById('steam-id-input');
     const minHoursInput = document.getElementById('min-hours-input');
     const searchButton = document.getElementById('search-button');
@@ -423,14 +657,38 @@
     const tierList = document.getElementById('tier-list');
     const editTierModal = document.getElementById('edit-tier-modal');
     const tierNameInput = document.getElementById('tier-name-input');
-    const colorOptions = document.getElementById('color-options');
+    const redInput = document.getElementById('red-input');
+    const greenInput = document.getElementById('green-input');
+    const blueInput = document.getElementById('blue-input');
+    const colorPreview = document.getElementById('color-preview');
+    const presetColors = document.getElementById('preset-colors');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     const saveTierBtn = document.getElementById('save-tier-btn');
     
+    // Elements for custom game modal
+    const addCustomGameButton = document.getElementById('add-custom-game-button');
+    const customGameModal = document.getElementById('custom-game-modal');
+    const customGameTitle = document.getElementById('custom-game-title');
+    const customGameImage = document.getElementById('custom-game-image');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const customGameHours = document.getElementById('custom-game-hours');
+    const customGameAchievementsEarned = document.getElementById('custom-game-achievements-earned');
+    const customGameAchievementsTotal = document.getElementById('custom-game-achievements-total');
+    const cancelCustomGameBtn = document.getElementById('cancel-custom-game-btn');
+    const addCustomGameBtn = document.getElementById('add-custom-game-btn');
+    
+    // Variables
     let currentEditingTier = null;
     let selectedColor = null;
-    let allGames = [];
+    let allGames = []; // Store all games for filtering
     
+    // Steam store icon SVG
+    const steamIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.253 0-2.265-1.014-2.265-2.265z"/>
+    </svg>`;
+    
+    // Color palette for tiers (preset colors)
     const tierColors = [
         '#ff7f7f', '#ffbf7f', '#ffdf7f', '#ffff7f', 
         '#bfff7f', '#7fff7f', '#7fffbf', '#7fffff', 
@@ -438,6 +696,7 @@
         '#ff7fbf', '#ffffff', '#cccccc', '#999999'
     ];
     
+    // Function to adjust tier label font size based on content
     function adjustTierLabelFontSize(label) {
         const text = label.textContent;
         const baseSize = 36;
@@ -456,6 +715,7 @@
             label.style.fontSize = (baseSize - 16) + 'px';
         }
         
+        // For longer texts, add line breaks if there isn't one already
         if (text.length > 6 && !text.includes('\n') && !text.includes('<br>')) {
             const midPoint = Math.floor(text.length / 2);
             let breakIndex = text.lastIndexOf(' ', midPoint);
@@ -471,29 +731,270 @@
         }
     }
     
+    // Update color preview
+    function updateColorPreview() {
+        const r = parseInt(redInput.value || 0);
+        const g = parseInt(greenInput.value || 0);
+        const b = parseInt(blueInput.value || 0);
+        
+        const colorValue = `rgb(${r}, ${g}, ${b})`;
+        colorPreview.style.backgroundColor = colorValue;
+        selectedColor = colorValue;
+    }
+    
+    // RGB to Hex conversion
+    function rgbToHex(r, g, b) {
+        return '#' + 
+            ('0' + r.toString(16)).slice(-2) +
+            ('0' + g.toString(16)).slice(-2) +
+            ('0' + b.toString(16)).slice(-2);
+    }
+    
+    // Hex to RGB conversion
+    function hexToRgb(hex) {
+        // Handle rgb format
+        if (hex && hex.startsWith('rgb')) {
+            const match = hex.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+            if (match) {
+                return {
+                    r: parseInt(match[1]),
+                    g: parseInt(match[2]),
+                    b: parseInt(match[3])
+                };
+            }
+            return null;
+        }
+        
+        // Handle hex format
+        if (!hex) return null;
+        
+        hex = hex.replace(/^#/, '');
+        
+        let r, g, b;
+        if (hex.length === 3) {
+            r = parseInt(hex.charAt(0) + hex.charAt(0), 16);
+            g = parseInt(hex.charAt(1) + hex.charAt(1), 16);
+            b = parseInt(hex.charAt(2) + hex.charAt(2), 16);
+        } else {
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
+        }
+        
+        return isNaN(r) || isNaN(g) || isNaN(b) ? null : { r, g, b };
+    }
+    
+    // Add event listeners to RGB inputs
+    function setupColorPicker() {
+        redInput.addEventListener('input', updateColorPreview);
+        greenInput.addEventListener('input', updateColorPreview);
+        blueInput.addEventListener('input', updateColorPreview);
+        
+        // Initialize color preview
+        updateColorPreview();
+        
+        // Create preset color options
+        presetColors.innerHTML = '';
+        tierColors.forEach(color => {
+            const colorOption = document.createElement('div');
+            colorOption.className = 'preset-color';
+            colorOption.style.backgroundColor = color;
+            colorOption.addEventListener('click', function() {
+                const rgb = hexToRgb(color);
+                if (rgb) {
+                    redInput.value = rgb.r;
+                    greenInput.value = rgb.g;
+                    blueInput.value = rgb.b;
+                    updateColorPreview();
+                }
+            });
+            presetColors.appendChild(colorOption);
+        });
+    }
+    
+    // Initialize custom game modal
+    function initCustomGameModal() {
+        // Show custom game modal
+        addCustomGameButton.addEventListener('click', function() {
+            // Reset form
+            customGameTitle.value = '';
+            customGameImage.value = '';
+            customGameHours.value = '';
+            customGameAchievementsEarned.value = '';
+            customGameAchievementsTotal.value = '';
+            imagePreviewContainer.style.display = 'none';
+            
+            // Show modal
+            customGameModal.style.display = 'flex';
+        });
+        
+        // Handle image preview
+        customGameImage.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreviewContainer.style.display = 'none';
+            }
+        });
+        
+        // Cancel button
+        cancelCustomGameBtn.addEventListener('click', function() {
+            customGameModal.style.display = 'none';
+        });
+        
+        // Add custom game button
+        addCustomGameBtn.addEventListener('click', function() {
+            const title = customGameTitle.value.trim();
+            if (!title) {
+                alert('Game title is required!');
+                return;
+            }
+            
+            // Create custom game
+            addCustomGame();
+        });
+    }
+    
+    // Create and add a custom game
+    function addCustomGame() {
+        const title = customGameTitle.value.trim();
+        const hours = parseFloat(customGameHours.value) || 0;
+        const achievementsEarned = parseInt(customGameAchievementsEarned.value) || 0;
+        const achievementsTotal = parseInt(customGameAchievementsTotal.value) || 0;
+        
+        // Create a unique ID for the custom game
+        const customId = 'custom-' + Date.now();
+        
+        // Create game object
+        const customGame = {
+            appid: customId,
+            name: title,
+            playtime: hours,
+            isCustom: true,
+            achievements: {
+                earned: achievementsEarned,
+                total: achievementsTotal,
+                hasAchievements: achievementsEarned > 0 || achievementsTotal > 0
+            }
+        };
+        
+        // Create game card
+        const gameCard = createGameCard(customGame);
+        
+        // If the user selected an image, use it
+        if (customGameImage.files.length > 0) {
+            const file = customGameImage.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Find the image in the newly created game card and set the source
+                const gameImage = gameCard.querySelector('.game-image');
+                if (gameImage) {
+                    gameImage.src = e.target.result;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Add to game pool
+        gamePool.appendChild(gameCard);
+        
+        // Close modal
+        customGameModal.style.display = 'none';
+        
+        showStatusMessage(`Added custom game: ${title}`, 'success');
+    }
+    
+    // Add event listeners for tier actions
+    function setupTierActions() {
+        // Move tier up
+        document.querySelectorAll('.move-up').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tier = this.closest('.tier');
+                const prevTier = tier.previousElementSibling;
+                
+                if (prevTier) {
+                    tierList.insertBefore(tier, prevTier);
+                }
+            });
+        });
+        
+        // Move tier down
+        document.querySelectorAll('.move-down').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tier = this.closest('.tier');
+                const nextTier = tier.nextElementSibling;
+                
+                if (nextTier) {
+                    tierList.insertBefore(nextTier, tier);
+                }
+            });
+        });
+        
+        // Delete tier
+        document.querySelectorAll('.delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tier = this.closest('.tier');
+                const tierLabel = tier.querySelector('.tier-label').textContent;
+                
+                if (confirm(`Are you sure you want to delete the "${tierLabel}" tier? All games will be moved to the game pool.`)) {
+                    // Move all games to the game pool
+                    const games = tier.querySelectorAll('.game-card');
+                    games.forEach(game => {
+                        gamePool.appendChild(game);
+                    });
+                    
+                    // Remove the tier
+                    tierList.removeChild(tier);
+                    
+                    showStatusMessage(`Deleted tier ${tierLabel}`, 'success');
+                }
+            });
+        });
+    }
+    
+    // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM fully loaded');
         
+        // Apply font size adjustment to existing tier labels
         document.querySelectorAll('.tier-label').forEach(label => {
             adjustTierLabelFontSize(label);
         });
         
+        // Set up event listeners for elements we know exist at page load
         searchButton.addEventListener('click', loadGames);
         addTierButton.addEventListener('click', addNewTier);
         resetButton.addEventListener('click', resetTierList);
         saveButton.addEventListener('click', saveTierListAsImage);
         
+        // Modal elements
         cancelEditBtn.addEventListener('click', closeEditTierModal);
         saveTierBtn.addEventListener('click', saveTierEdit);
         
+        // Set up tier label click handlers
         document.querySelectorAll('.tier-label').forEach(label => {
             label.addEventListener('click', openEditTierModal);
         });
         
-        initializeColorOptions();
+        // Initialize color picker
+        setupColorPicker();
         
+        // Set up tier actions
+        setupTierActions();
+        
+        // Initialize custom game modal
+        initCustomGameModal();
+        
+        // Set up drag and drop
         setupDragAndDrop();
         
+        // Check URL for steamID parameter
         const urlParams = new URLSearchParams(window.location.search);
         const steamId = urlParams.get('steamid');
         if (steamId) {
@@ -504,6 +1005,7 @@
         console.log('Event listeners successfully attached');
     });
     
+    // Load games from Steam
     function loadGames() {
         const steamId = steamIdInput.value.trim();
         const minHours = parseInt(minHoursInput.value) || 0;
@@ -513,27 +1015,36 @@
             return;
         }
         
+        // Show loading indicator
         loader.style.display = 'block';
         showStatusMessage('Loading games...', 'normal');
         
+        // Determine if input is a URL, vanity URL, or SteamID64
         let apiEndpoint = `/api/games?`;
         
         if (steamId.match(/^7656119\d{10}$/)) {
+            // It's a SteamID64
             apiEndpoint += `steamid=${steamId}`;
         } else if (steamId.includes('steamcommunity.com')) {
+            // It's a full URL
             if (steamId.includes('/id/')) {
+                // Vanity URL
                 const vanityName = steamId.split('/id/')[1].split('/')[0];
                 apiEndpoint += `vanity=${vanityName}`;
             } else if (steamId.includes('/profiles/')) {
+                // Profile URL with SteamID64
                 const profileId = steamId.split('/profiles/')[1].split('/')[0];
                 apiEndpoint += `steamid=${profileId}`;
             }
         } else {
+            // Assume it's a vanity URL name
             apiEndpoint += `vanity=${steamId}`;
         }
         
+        // Add timestamp to prevent caching
         apiEndpoint += `&t=${Date.now()}`;
         
+        // Fetch games
         fetch(apiEndpoint)
             .then(response => {
                 if (!response.ok) {
@@ -548,8 +1059,10 @@
                     throw new Error('No games found or profile is private');
                 }
                 
+                // Store all games
                 allGames = games;
                 
+                // Filter games by minimum hours
                 const filteredGames = games.filter(game => game.playtime >= minHours);
                 
                 if (filteredGames.length === 0) {
@@ -558,8 +1071,10 @@
                     return;
                 }
                 
+                // Clear game pool
                 gamePool.innerHTML = '';
                 
+                // Create game cards
                 filteredGames.forEach(game => {
                     const gameCard = createGameCard(game);
                     gamePool.appendChild(gameCard);
@@ -575,22 +1090,43 @@
             });
     }
     
+    // Create a game card element
     function createGameCard(game) {
+        console.log(1)
         const gameCard = document.createElement('div');
         gameCard.className = 'game-card';
         gameCard.draggable = true;
         gameCard.dataset.appid = game.appid;
         gameCard.dataset.name = game.name;
         gameCard.dataset.playtime = game.playtime || 0;
+        gameCard.dataset.isCustom = game.isCustom || false;
         
+        // Game tooltip for full name on hover
         const gameTooltip = document.createElement('div');
         gameTooltip.className = 'game-tooltip';
         gameTooltip.textContent = game.name;
         gameCard.appendChild(gameTooltip);
         
+        if (!game.isCustom) {
+            const storeLink = document.createElement('div');
+            storeLink.className = 'steam-store-link';
+            storeLink.innerHTML = steamIconSVG;
+            storeLink.title = 'Open in Steam Store';
+            storeLink.addEventListener('click', function(e) {
+                e.stopPropagation(); // Prevent drag start
+                window.open(`https://store.steampowered.com/app/${game.appid}`, '_blank');
+            });
+            gameCard.appendChild(storeLink);
+        }
+        
+        // Game image
         const gameImage = document.createElement('img');
         gameImage.className = 'game-image';
-        gameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`;
+        if (!game.isCustom) {
+            gameImage.src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`;
+        } else {
+            gameImage.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22120%22%20height%3D%2256%22%3E%3Crect%20width%3D%22120%22%20height%3D%2256%22%20fill%3D%22%23424242%22%2F%3E%3Ctext%20x%3D%2260%22%20y%3D%2228%22%20font-family%3D%22Arial%22%20font-size%3D%2212%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%3ECustom%20Game%3C%2Ftext%3E%3C%2Fsvg%3E';
+        }
         gameImage.alt = game.name;
         gameImage.crossOrigin = "anonymous";
         gameImage.onerror = function() {
@@ -607,6 +1143,7 @@
         const gamePlaytime = document.createElement('div');
         gamePlaytime.className = 'game-playtime';
         
+        // Format the playtime
         let playtimeText;
         if (game.playtime === 0) {
             playtimeText = '0 hrs';
@@ -619,13 +1156,24 @@
         gamePlaytime.textContent = playtimeText;
         gameCard.appendChild(gamePlaytime);
         
+        console.log(game)
+        if (game.achievements && game.achievements.hasAchievements) {
+            const gameAchievements = document.createElement('div');
+            gameAchievements.className = 'game-achievements';
+            gameAchievements.textContent = `${game.achievements.earned}/${game.achievements.total}`;
+            gameCard.appendChild(gameAchievements);
+        }
+        
+        // Set up drag events
         gameCard.addEventListener('dragstart', handleDragStart);
         gameCard.addEventListener('dragend', handleDragEnd);
         
         return gameCard;
     }
     
+    // Setup drag and drop
     function setupDragAndDrop() {
+        // Set up drop zones
         const dropZones = document.querySelectorAll('.tier-items, #game-pool');
         dropZones.forEach(zone => {
             zone.addEventListener('dragover', handleDragOver);
@@ -635,18 +1183,21 @@
         });
     }
     
+    // Drag and drop handlers
     function handleDragStart(e) {
         this.classList.add('dragging');
         e.dataTransfer.setData('text/plain', this.dataset.appid);
         e.dataTransfer.effectAllowed = 'move';
         
+        // Create a custom drag image that shows the whole card
         const dragImage = this.cloneNode(true);
         dragImage.style.opacity = '1';
         dragImage.style.position = 'absolute';
         dragImage.style.top = '-1000px';
         document.body.appendChild(dragImage);
-        e.dataTransfer.setDragImage(dragImage, 60, 60);
+        e.dataTransfer.setDragImage(dragImage, 60, 60); // Center point
         
+        // Clean up the clone after drag starts
         setTimeout(() => {
             document.body.removeChild(dragImage);
         }, 0);
@@ -654,7 +1205,7 @@
     
     function handleDragEnd() {
         this.classList.remove('dragging');
-        document.querySelectorAll('.tier-items').forEach(item => {
+        document.querySelectorAll('.tier-items, #game-pool').forEach(item => {
             item.classList.remove('drag-over');
         });
     }
@@ -663,6 +1214,7 @@
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         
+        // For reordering within a tier
         const draggable = document.querySelector('.dragging');
         if (draggable && this.contains(draggable)) {
             const afterElement = getDragAfterElement(this, e.clientX, e.clientY);
@@ -676,19 +1228,27 @@
         return false;
     }
     
+    // Function to determine position for reordering
     function getDragAfterElement(container, x, y) {
+        // Get all non-dragging game cards in the container
         const draggableElements = [...container.querySelectorAll('.game-card:not(.dragging)')];
         
+        // Find the closest element based on mouse position
         return draggableElements.reduce((closest, child) => {
+            // Get bounding rectangle for the element
             const box = child.getBoundingClientRect();
             
+            // Calculate offset from the center (for horizontal sorting)
             const horizontalOffset = x - (box.left + box.width / 2);
             const verticalOffset = y - (box.top + box.height / 2);
             
+            // Calculate distance from the mouse to the center of the element
             const distance = Math.sqrt(horizontalOffset * horizontalOffset + verticalOffset * verticalOffset);
             
+            // Only consider elements that are "ahead" of the mouse
             if (horizontalOffset > 0) return closest;
             
+            // If this element is closer than the current closest, update closest
             if (distance < closest.distance) {
                 return { element: child, distance: distance };
             } else {
@@ -713,6 +1273,7 @@
         const draggedItem = document.querySelector(`.game-card[data-appid="${appId}"]`);
         
         if (draggedItem && !this.contains(draggedItem)) {
+            // Get the element after which to insert the dragged item
             const afterElement = getDragAfterElement(this, e.clientX, e.clientY);
             
             if (afterElement) {
@@ -725,79 +1286,66 @@
         return false;
     }
     
-    function initializeColorOptions() {
-        console.log('Initializing color options');
-        
-        colorOptions.innerHTML = '';
-        
-        tierColors.forEach(color => {
-            const colorOption = document.createElement('div');
-            colorOption.className = 'color-option';
-            colorOption.style.backgroundColor = color;
-            colorOption.addEventListener('click', function() {
-                console.log('Color option clicked:', color);
-                document.querySelectorAll('.color-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
-                
-                colorOption.classList.add('selected');
-                selectedColor = color;
-            });
-            colorOptions.appendChild(colorOption);
-        });
-        
-        console.log('Color options initialized successfully');
-    }
-    
+    // Open edit tier modal
     function openEditTierModal() {
         console.log('Tier label clicked - opening edit modal');
         currentEditingTier = this;
         
+        // Get current values
         const tierName = this.textContent;
         const tierColor = this.style.backgroundColor;
         
         console.log('Current tier values:', tierName, tierColor);
         
+        // Set form values
         tierNameInput.value = tierName;
         
-        editTierModal.style.display = 'flex';
+        // Set RGB values based on current color
+        const rgb = hexToRgb(tierColor);
+        if (rgb) {
+            redInput.value = rgb.r;
+            greenInput.value = rgb.g;
+            blueInput.value = rgb.b;
+            updateColorPreview();
+        }
         
-        document.querySelectorAll('.color-option').forEach(option => {
-            option.classList.remove('selected');
-            
-            if (option.style.backgroundColor === tierColor) {
-                option.classList.add('selected');
-                selectedColor = tierColor;
-            }
-        });
+        // Show modal
+        editTierModal.style.display = 'flex';
     }
     
+    // Close edit tier modal
     function closeEditTierModal() {
         editTierModal.style.display = 'none';
     }
     
+    // Save tier edit
     function saveTierEdit() {
         if (!currentEditingTier) return;
         
+        // Update tier name
         const newName = tierNameInput.value.trim() || currentEditingTier.textContent;
         currentEditingTier.textContent = newName;
         
+        // Adjust font size based on new name
         adjustTierLabelFontSize(currentEditingTier);
         
+        // Update tier color
         if (selectedColor) {
             currentEditingTier.style.backgroundColor = selectedColor;
             
-
-const rgb = hexToRgb(selectedColor);
+            // Update text color based on background brightness
+            const rgb = hexToRgb(selectedColor);
             if (rgb) {
                 const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
                 currentEditingTier.style.color = brightness > 125 ? '#000' : '#fff';
             }
         }
         
+        // Close modal
         closeEditTierModal();
     }
     
+    // Add a new tier
     function addNewTier() {
         const tiers = ['D', 'E', 'F', 'G', 'H'];
         const colors = ['#7fff7f', '#7fffbf', '#7fbfff', '#bf7fff', '#ff7fbf'];
@@ -808,29 +1356,89 @@ const rgb = hexToRgb(selectedColor);
             return;
         }
         
-        const newTierIndex = existingTiers - 4; // already have S, A, B, C
+        const newTierIndex = existingTiers - 4; // We already have S, A, B, C
         if (newTierIndex >= 0 && newTierIndex < tiers.length) {
             const tier = document.createElement('div');
             tier.className = 'tier';
+            
+            // Create tier actions
+            const tierActions = document.createElement('div');
+            tierActions.className = 'tier-actions';
+            
+            const moveUpBtn = document.createElement('button');
+            moveUpBtn.className = 'tier-action-btn move-up';
+            moveUpBtn.title = 'Move Up';
+            moveUpBtn.textContent = '↑';
+            moveUpBtn.addEventListener('click', function() {
+                const tier = this.closest('.tier');
+                const prevTier = tier.previousElementSibling;
+                
+                if (prevTier) {
+                    tierList.insertBefore(tier, prevTier);
+                }
+            });
+            
+            const moveDownBtn = document.createElement('button');
+            moveDownBtn.className = 'tier-action-btn move-down';
+            moveDownBtn.title = 'Move Down';
+            moveDownBtn.textContent = '↓';
+            moveDownBtn.addEventListener('click', function() {
+                const tier = this.closest('.tier');
+                const nextTier = tier.nextElementSibling;
+                
+                if (nextTier) {
+                    tierList.insertBefore(nextTier, tier);
+                }
+            });
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'tier-action-btn delete';
+            deleteBtn.title = 'Delete Tier';
+            deleteBtn.textContent = '×';
+            deleteBtn.addEventListener('click', function() {
+                const tier = this.closest('.tier');
+                const tierLabel = tier.querySelector('.tier-label').textContent;
+                
+                if (confirm(`Are you sure you want to delete the "${tierLabel}" tier? All games will be moved to the game pool.`)) {
+                    // Move all games to the game pool
+                    const games = tier.querySelectorAll('.game-card');
+                    games.forEach(game => {
+                        gamePool.appendChild(game);
+                    });
+                    
+                    // Remove the tier
+                    tierList.removeChild(tier);
+                    
+                    showStatusMessage(`Deleted tier ${tierLabel}`, 'success');
+                }
+            });
+            
+            tierActions.appendChild(moveUpBtn);
+            tierActions.appendChild(moveDownBtn);
+            tierActions.appendChild(deleteBtn);
             
             const tierLabel = document.createElement('div');
             tierLabel.className = 'tier-label';
             tierLabel.textContent = tiers[newTierIndex];
             tierLabel.style.backgroundColor = colors[newTierIndex];
             
+            // Add click handler for editing
             tierLabel.addEventListener('click', openEditTierModal);
             
+            // Adjust font size for the new tier
             adjustTierLabelFontSize(tierLabel);
             
             const tierItems = document.createElement('div');
             tierItems.className = 'tier-items';
             tierItems.dataset.tier = tiers[newTierIndex];
             
+            // Set up drop zone
             tierItems.addEventListener('dragover', handleDragOver);
             tierItems.addEventListener('dragenter', handleDragEnter);
             tierItems.addEventListener('dragleave', handleDragLeave);
             tierItems.addEventListener('drop', handleDrop);
             
+            tier.appendChild(tierActions);
             tier.appendChild(tierLabel);
             tier.appendChild(tierItems);
             tierList.appendChild(tier);
@@ -839,6 +1447,7 @@ const rgb = hexToRgb(selectedColor);
         }
     }
     
+    // Reset tier list
     function resetTierList() {
         if (confirm('Are you sure you want to reset the tier list? All games will be moved back to the game pool.')) {
             const allGames = document.querySelectorAll('.tier-items .game-card');
@@ -849,7 +1458,9 @@ const rgb = hexToRgb(selectedColor);
         }
     }
     
+    // Save tier list as image
     function saveTierListAsImage() {
+        // Create a container with all tiers (including empty ones)
         const tempContainer = document.createElement('div');
         tempContainer.style.backgroundColor = '#1b2838';
         tempContainer.style.padding = '20px';
@@ -860,39 +1471,60 @@ const rgb = hexToRgb(selectedColor);
         title.style.textAlign = 'center';
         tempContainer.appendChild(title);
         
+        // Clone the tier list including all tiers
         const tierListClone = document.createElement('div');
         
+        // Pre-load all images to cache them
         const gameImages = document.querySelectorAll('.game-image');
         const imagePromises = [];
         
         gameImages.forEach(img => {
             const promise = new Promise((resolve) => {
+                // If image is already loaded, resolve immediately
                 if (img.complete) {
                     resolve();
                     return;
                 }
                 
+                // Create a new image element to pre-load the same source
                 const preloadImg = new Image();
                 preloadImg.crossOrigin = "anonymous";
                 preloadImg.onload = () => resolve();
-                preloadImg.onerror = () => resolve();
+                preloadImg.onerror = () => resolve(); // Resolve on error too
                 preloadImg.src = img.src;
             });
             
             imagePromises.push(promise);
         });
         
+        // Show a loading message
         showStatusMessage('Preparing image...', 'normal');
         
+        // Wait for all images to load
         Promise.all(imagePromises)
             .then(() => {
+                // Clone all tiers regardless of whether they contain games
                 document.querySelectorAll('.tier').forEach(tier => {
                     const tierClone = tier.cloneNode(true);
                     
+                    // Remove tier actions for the export
+                    const tierActions = tierClone.querySelector('.tier-actions');
+                    if (tierActions) {
+                        tierClone.removeChild(tierActions);
+                    }
+                    
+                    // Hide steam store links
+                    tierClone.querySelectorAll('.steam-store-link').forEach(link => {
+                        link.style.display = 'none';
+                    });
+                    
+                    // Apply export-specific styles to the clone
                     tierClone.querySelectorAll('.game-card').forEach(card => {
                         card.classList.add('clone-for-export');
+                        // Ensure image is visible in the clone
                         const img = card.querySelector('.game-image');
                         if (img) {
+                            // If the original image didn't load, use the fallback
                             if (img.naturalWidth === 0) {
                                 img.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20version%3D%221.1%22%20width%3D%22120%22%20height%3D%2256%22%3E%3Crect%20width%3D%22120%22%20height%3D%2256%22%20fill%3D%22%23424242%22%2F%3E%3Ctext%20x%3D%2260%22%20y%3D%2228%22%20font-family%3D%22Arial%22%20font-size%3D%2212%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E';
                             }
@@ -904,10 +1536,12 @@ const rgb = hexToRgb(selectedColor);
                 
                 tempContainer.appendChild(tierListClone);
                 
+                // Temporarily append to body but hide it
                 tempContainer.style.position = 'absolute';
                 tempContainer.style.left = '-9999px';
                 document.body.appendChild(tempContainer);
                 
+                // Use html2canvas with proper settings
                 return html2canvas(tempContainer, {
                     backgroundColor: '#1b2838',
                     scale: 2,
@@ -922,6 +1556,7 @@ const rgb = hexToRgb(selectedColor);
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 
+                // Clean up
                 document.body.removeChild(tempContainer);
                 showStatusMessage('Tier list image saved!', 'success');
             })
@@ -934,39 +1569,12 @@ const rgb = hexToRgb(selectedColor);
             });
     }
     
-    function rgbToHex(rgb) {
-        if (!rgb) return '#000000';
-        
-        const rgbMatch = rgb.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
-        if (rgbMatch) {
-            return '#' + 
-                ('0' + parseInt(rgbMatch[1], 10).toString(16)).slice(-2) +
-                ('0' + parseInt(rgbMatch[2], 10).toString(16)).slice(-2) +
-                ('0' + parseInt(rgbMatch[3], 10).toString(16)).slice(-2);
-        }
-        
-        return rgb;
-    }
-    
-    function hexToRgb(hex) {
-        if (typeof hex !== 'string') return null;
-        
-        hex = hex.replace(/^#/, '');
-        
-        const bigint = parseInt(hex, 16);
-        if (isNaN(bigint)) return null;
-        
-        return {
-            r: (bigint >> 16) & 255,
-            g: (bigint >> 8) & 255,
-            b: bigint & 255
-        };
-    }
-    
-    function showStatusMessage(message, type) {
+// Show status message
+function showStatusMessage(message, type) {
         statusMessage.textContent = message;
         statusMessage.style.display = 'block';
         
+        // Reset classes
         statusMessage.classList.remove('error', 'success');
         
         if (type === 'error') {
@@ -975,6 +1583,7 @@ const rgb = hexToRgb(selectedColor);
             statusMessage.classList.add('success');
         }
         
+        // Auto hide after 5 seconds
         setTimeout(() => {
             statusMessage.style.display = 'none';
         }, 5000);
