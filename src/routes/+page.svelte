@@ -477,32 +477,80 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		}
 
 		setStatus('Preparing image...', 'normal');
+		const rootStyle = getComputedStyle(document.documentElement);
+		const readThemeVar = (name: string, fallback = '') => rootStyle.getPropertyValue(name).trim() || fallback;
+		const bgColor = readThemeVar('--bg-color', '#101214');
+		const textColor = readThemeVar('--text-color', '#e3e3e3');
+		const bodyFont = readThemeVar('--font-family', '"IBM Plex Mono", monospace');
+		const displayFont = readThemeVar('--display-font', '"Space Mono", monospace');
+		const themeVars = [
+			'--bg-color',
+			'--text-color',
+			'--accent-color',
+			'--container-bg',
+			'--container-bg-alt',
+			'--container-bg-lite',
+			'--line-color',
+			'--line-strong',
+			'--playtime-color',
+			'--playtime-pill-bg',
+			'--playtime-pill-border',
+		];
 
 		const temp = document.createElement('div');
-		temp.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-color');
+		for (const name of themeVars) {
+			const value = readThemeVar(name);
+			if (value) temp.style.setProperty(name, value);
+		}
+		temp.style.backgroundColor = bgColor;
+		temp.style.color = textColor;
+		temp.style.fontFamily = bodyFont;
 		temp.style.padding = '20px';
 		temp.style.position = 'fixed';
 		temp.style.left = '-9999px';
 		temp.style.top = '0';
-		temp.style.width = `${Math.max(tierListElement.getBoundingClientRect().width, 800)}px`;
+		temp.style.width = `${Math.max(tierListElement.getBoundingClientRect().width, 980)}px`;
+		temp.style.background = bgColor;
 
 		const title = document.createElement('h1');
 		title.textContent = 'Steam Library Tier List';
-		title.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
-		title.style.fontFamily = '"Space Mono", "IBM Plex Mono", monospace';
+		title.style.color = '#ffffff';
+		title.style.fontFamily = displayFont;
 		title.style.textAlign = 'center';
+		title.style.margin = '0 0 20px';
 		temp.appendChild(title);
 
 		const clone = tierListElement.cloneNode(true) as HTMLElement;
 		clone.querySelectorAll<HTMLElement>('.tier-actions').forEach((el) => el.remove());
-		clone.querySelectorAll<HTMLElement>('.game-card').forEach((el) => el.classList.add('clone-for-export'));
+		clone.querySelectorAll<HTMLElement>('.tier').forEach((el) => {
+			el.style.gridTemplateColumns = '120px minmax(0, 1fr)';
+		});
+		clone.querySelectorAll<HTMLElement>('.tier-label').forEach((el) => {
+			el.style.gridColumn = '1 / 2';
+			el.style.minWidth = '120px';
+		});
+		clone.querySelectorAll<HTMLElement>('.tier-items').forEach((el) => {
+			el.style.gridColumn = '2 / 3';
+		});
+		clone.querySelectorAll<HTMLElement>('.game-card').forEach((el) => {
+			el.classList.add('clone-for-export');
+			el.style.animation = 'none';
+			el.style.transition = 'none';
+			el.style.transform = 'none';
+			el.style.opacity = '1';
+			el.style.filter = 'none';
+		});
+		clone.querySelectorAll<HTMLElement>('.game-image').forEach((el) => {
+			el.style.opacity = '1';
+			el.style.filter = 'none';
+		});
 		temp.appendChild(clone);
 		document.body.appendChild(temp);
 
 		try {
 			await waitForImages(temp);
 			const canvas = await html2canvas(temp, {
-				backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-color'),
+				backgroundColor: bgColor,
 				scale: 2,
 				useCORS: true,
 				allowTaint: true,
@@ -758,6 +806,12 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 
 	:global(*) {
 		box-sizing: border-box;
+	}
+
+	:global(body),
+	:global(body *) {
+		user-select: none;
+		-webkit-user-select: none;
 	}
 
 	:global(body) {
