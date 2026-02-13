@@ -1,8 +1,8 @@
 <script lang="ts">
-import { onMount } from 'svelte';
+import { onDestroy, onMount } from 'svelte';
 import html2canvas from 'html2canvas';
 import GameCard from '$lib/components/GameCard.svelte';
-import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
+import type { Game, StatusMessage, Tier } from '$lib/types';
 
 	interface RgbColor {
 		r: number;
@@ -47,12 +47,6 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 		{ name: 'H', color: '#ff7fbf' },
 	];
 
-	const themes: Record<'steam' | 'dark' | 'light', Theme> = {
-		steam: { bgColor: '#1b2838', textColor: '#c7d5e0', accentColor: '#66c0f4', containerBg: '#2a475e' },
-		dark: { bgColor: '#121212', textColor: '#ffffff', accentColor: '#bb86fc', containerBg: '#1e1e1e' },
-		light: { bgColor: '#f5f5f5', textColor: '#333333', accentColor: '#2196f3', containerBg: '#ffffff' },
-	};
-
 	let steamInput = '';
 	let minHoursInput = '';
 	let loading = false;
@@ -71,9 +65,6 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 	let draggedGameId = '';
 	let dragOverZone = '';
 
-	let theme: Theme = { ...themes.steam };
-	let themeCollapsed = true;
-
 	let showEditTierModal = false;
 	let editingTierIndex = -1;
 	let editTierName = '';
@@ -89,8 +80,6 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 
 	let tierListElement: HTMLDivElement | undefined;
 
-	$: applyTheme();
-
 	onMount(() => {
 		const steamId = new URLSearchParams(window.location.search).get('steamid');
 		if (steamId) {
@@ -99,25 +88,12 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 		}
 	});
 
-	function applyTheme() {
-		if (typeof document === 'undefined') return;
-		const root = document.documentElement;
-
-		root.style.setProperty('--bg-color', theme.bgColor);
-		root.style.setProperty('--text-color', theme.textColor);
-		root.style.setProperty('--accent-color', theme.accentColor);
-		root.style.setProperty('--container-bg', theme.containerBg);
-
-		const container = hexToRgb(theme.containerBg);
-		const accent = hexToRgb(theme.accentColor);
-		if (container) {
-			root.style.setProperty('--container-bg-alt', `rgba(${container.r}, ${container.g}, ${container.b}, 0.5)`);
-			root.style.setProperty('--container-bg-lite', `rgba(${container.r}, ${container.g}, ${container.b}, 0.3)`);
+	onDestroy(() => {
+		if (statusTimer) {
+			clearTimeout(statusTimer);
+			statusTimer = null;
 		}
-		if (accent) {
-			root.style.setProperty('--hover-bg', `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.2)`);
-		}
-	}
+	});
 
 	function setStatus(message: string, type: StatusMessage['type'] = 'normal') {
 		status = { message, type };
@@ -142,12 +118,6 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 
 	function hexToRgb(hex: string): RgbColor | null {
 		if (!hex) return null;
-		if (hex.startsWith('rgb')) {
-			const match = hex.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
-			if (!match) return null;
-			return { r: clampRgb(match[1]), g: clampRgb(match[2]), b: clampRgb(match[3]) };
-		}
-
 		const v = hex.replace('#', '');
 		const expanded = v.length === 3 ? v.split('').map((c) => c + c).join('') : v;
 		if (expanded.length !== 6) return null;
@@ -519,7 +489,7 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 		const title = document.createElement('h1');
 		title.textContent = 'Steam Library Tier List';
 		title.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
-		title.style.fontFamily = 'Arial, sans-serif';
+		title.style.fontFamily = '"Space Mono", "IBM Plex Mono", monospace';
 		title.style.textAlign = 'center';
 		temp.appendChild(title);
 
@@ -552,7 +522,11 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 </script>
 
 <div class="container">
-	<h1>Steam Library Tier List</h1>
+	<header class="hero">
+		<p class="hero-kicker">Steam Library</p>
+		<h1>Tier List</h1>
+		<p class="hero-subtitle">Rank what you actually play.</p>
+	</header>
 
 	{#if status}
 		<div class={`status-message ${status.type === 'error' ? 'error' : status.type === 'success' ? 'success' : ''}`}>
@@ -560,56 +534,27 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 		</div>
 	{/if}
 
-	<form class="search-form" on:submit|preventDefault={loadGames}>
-		<input type="text" bind:value={steamInput} placeholder="Enter Steam Vanity URL or Steam ID" />
-		<input type="number" min="0" step="1" bind:value={minHoursInput} placeholder="Min Hrs Played" title="Minimum hours played" />
-		<button type="submit" disabled={loading}>Load Games</button>
-		<div class={`loader ${loading ? 'visible' : ''}`}></div>
-	</form>
+	<section class="panel search-panel">
+		<h2 class="section-heading">Load Games</h2>
+		<form class="search-form" on:submit|preventDefault={loadGames}>
+			<input type="text" bind:value={steamInput} placeholder="Enter Steam Vanity URL or Steam ID" />
+			<input type="number" min="0" step="1" bind:value={minHoursInput} placeholder="Min Hrs Played" title="Minimum hours played" />
+			<button type="submit" disabled={loading}>Load Games</button>
+			<div class={`loader ${loading ? 'visible' : ''}`}></div>
+		</form>
+	</section>
 
-	<div class={`theme-section ${themeCollapsed ? 'collapsed' : ''}`}>
-		<div class="theme-header">
-			<h3>Customize Theme</h3>
-			<button type="button" class="toggle-button" on:click={() => (themeCollapsed = !themeCollapsed)}>
-				{themeCollapsed ? 'Show Options' : 'Hide Options'}
-			</button>
-		</div>
-
-		<div class="theme-content">
-			<div class="theme-controls">
-				<div class="theme-control">
-					<label for="bg-color-input">Background</label>
-					<input id="bg-color-input" type="color" bind:value={theme.bgColor} />
-				</div>
-				<div class="theme-control">
-					<label for="text-color-input">Text</label>
-					<input id="text-color-input" type="color" bind:value={theme.textColor} />
-				</div>
-				<div class="theme-control">
-					<label for="accent-color-input">Accent</label>
-					<input id="accent-color-input" type="color" bind:value={theme.accentColor} />
-				</div>
-				<div class="theme-control">
-					<label for="container-bg-input">Container</label>
-					<input id="container-bg-input" type="color" bind:value={theme.containerBg} />
-				</div>
-			</div>
-
-			<div class="preset-themes">
-				<button type="button" class="preset-theme" on:click={() => (theme = { ...themes.steam })}>Steam</button>
-				<button type="button" class="preset-theme" on:click={() => (theme = { ...themes.dark })}>Dark</button>
-				<button type="button" class="preset-theme" on:click={() => (theme = { ...themes.light })}>Light</button>
-			</div>
+	<div class="panel controls-panel">
+		<h2 class="section-heading">Actions</h2>
+		<div class="controls">
+			<button type="button" on:click={addTier}>Add Tier</button>
+			<button type="button" on:click={openCustomGameModal}>Add Custom Game</button>
+			<button type="button" on:click={resetTierList}>Reset Tier List</button>
+			<button type="button" on:click={saveTierListAsImage}>Save as Image</button>
 		</div>
 	</div>
 
-	<div class="controls">
-		<button type="button" on:click={addTier}>Add Tier</button>
-		<button type="button" on:click={openCustomGameModal}>Add Custom Game</button>
-		<button type="button" on:click={resetTierList}>Reset Tier List</button>
-		<button type="button" on:click={saveTierListAsImage}>Save as Image</button>
-	</div>
-
+	<h2 class="section-heading">Tier Board</h2>
 	<div id="tier-list" bind:this={tierListElement}>
 		{#each tiers as tier, tierIndex (tier.id)}
 			{@const zone = zoneKeyForTier(tier.id)}
@@ -655,7 +600,7 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 		{/each}
 	</div>
 
-	<h2>Game Pool</h2>
+	<h2 class="section-heading">Game Pool</h2>
 	<div
 		class={`game-pool ${dragOverZone === 'pool' ? 'drag-over' : ''}`}
 		role="list"
@@ -785,51 +730,115 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 {/if}
 
 <style>
-	:global(:root) {
-		--bg-color: #1b2838;
-		--text-color: #c7d5e0;
-		--accent-color: #66c0f4;
-		--container-bg: #2a475e;
-		--container-bg-alt: rgba(42, 71, 94, 0.5);
-		--container-bg-lite: rgba(42, 71, 94, 0.3);
-		--hover-bg: rgba(102, 192, 244, 0.2);
-		--success-bg: rgba(77, 255, 77, 0.3);
-		--error-bg: rgba(255, 77, 77, 0.3);
-		--btn-hover-scale: 1.05;
-		--playtime-color: #8bc53f;
-		--font-family: Arial, sans-serif;
-	}
+	@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
 
-	:global(body) {
-		margin: 0;
-		padding: 20px;
-		background: var(--bg-color);
-		color: var(--text-color);
-		font-family: var(--font-family);
-		box-sizing: border-box;
+	:global(:root) {
+		--bg-color: #101214;
+		--text-color: #e3e3e3;
+		--accent-color: #8ec7ff;
+		--container-bg: #191d22;
+		--container-bg-alt: rgba(25, 29, 34, 0.9);
+		--container-bg-lite: rgba(25, 29, 34, 0.75);
+		--hover-bg: rgba(142, 199, 255, 0.12);
+		--success-bg: rgba(91, 194, 122, 0.22);
+		--error-bg: rgba(230, 103, 103, 0.2);
+		--playtime-color: #8ec7ff;
+		--font-family: 'IBM Plex Mono', monospace;
+		--display-font: 'Space Mono', monospace;
+		--line-color: rgba(227, 227, 227, 0.18);
+		--line-strong: rgba(227, 227, 227, 0.34);
+		--text-muted-1: rgba(227, 227, 227, 0.56);
+		--text-muted-2: rgba(227, 227, 227, 0.68);
+		--input-bg: rgba(25, 29, 34, 0.72);
+		--tier-actions-bg: rgba(25, 29, 34, 0.9);
+		--spinner-track: rgba(227, 227, 227, 0.16);
+		--playtime-pill-bg: rgba(142, 199, 255, 0.14);
+		--playtime-pill-border: rgba(142, 199, 255, 0.46);
 	}
 
 	:global(*) {
 		box-sizing: border-box;
 	}
 
-	h1,
-	h2 {
-		text-align: center;
-		color: var(--accent-color);
+	:global(body) {
+		margin: 0;
+		padding: 24px 16px 60px;
+		min-height: 100vh;
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		font-family: var(--font-family);
+		letter-spacing: 0.01em;
+	}
+
+	:global(input),
+	:global(button) {
+		font: inherit;
 	}
 
 	.container {
-		max-width: 1200px;
+		max-width: 1180px;
 		margin: 0 auto;
+		animation: page-in 420ms ease-out both;
+	}
+
+	.hero {
+		text-align: center;
+		margin: 6px 0 26px;
+	}
+
+	.hero-kicker {
+		margin: 0;
+		font-size: 14px;
+		color: var(--text-muted-1);
+		text-transform: lowercase;
+		letter-spacing: 0.06em;
+	}
+
+	h1 {
+		margin: 6px 0 3px;
+		font-family: var(--display-font);
+		font-size: clamp(44px, 8vw, 66px);
+		line-height: 1;
+		letter-spacing: 0.04em;
+	}
+
+	.hero-subtitle {
+		margin: 0;
+		font-size: 15px;
+		color: var(--text-muted-2);
+		text-transform: lowercase;
+	}
+
+	.section-heading {
+		margin: 0 0 12px;
+		font-size: 32px;
+		font-family: var(--display-font);
+		line-height: 1;
+		letter-spacing: 0.02em;
+	}
+
+	.panel,
+	#tier-list,
+	.game-pool {
+		background: var(--container-bg);
+		border: 1px solid var(--line-color);
+	}
+
+	.panel {
+		padding: 18px;
+		margin-bottom: 16px;
+	}
+
+	.search-panel {
+		padding-bottom: 14px;
 	}
 
 	.status-message {
-		padding: 10px;
-		border-radius: 5px;
-		margin-bottom: 10px;
-		text-align: center;
-		background: var(--container-bg);
+		margin-bottom: 16px;
+		padding: 11px 13px;
+		border: 1px solid var(--line-strong);
+		background: var(--container-bg-alt);
+		font-size: 14px;
 	}
 
 	.status-message.error {
@@ -841,312 +850,363 @@ import type { Game, StatusMessage, Theme, Tier } from '$lib/types';
 	}
 
 	.search-form {
-		background: var(--container-bg);
-		padding: 20px;
-		border-radius: 5px;
-		text-align: center;
+		display: grid;
+		grid-template-columns: minmax(260px, 1fr) 140px auto;
+		gap: 10px;
+		align-items: center;
 	}
 
 	.search-form input {
-		padding: 10px;
-		margin-right: 10px;
-		border: 1px solid var(--accent-color);
-		border-radius: 3px;
-		background: var(--bg-color);
+		height: 42px;
+		padding: 8px 11px;
+		border: 1px solid var(--line-strong);
+		background: var(--input-bg);
 		color: var(--text-color);
 	}
 
-	.search-form input[type='text'] {
-		width: 300px;
+	:global(input[type='number']) {
+		color-scheme: dark;
 	}
 
-	.search-form input[type='number'] {
-		width: 120px;
+	:global(input[type='number']::-webkit-inner-spin-button),
+	:global(input[type='number']::-webkit-outer-spin-button) {
+		opacity: 1;
+	}
+
+	.search-form input:focus-visible,
+	.form-group input:focus-visible {
+		outline: 2px solid var(--accent-color);
+		outline-offset: 2px;
 	}
 
 	.search-form button,
 	.controls button,
-	.toggle-button,
-	.preset-theme,
 	.modal-buttons button {
-		padding: 10px 15px;
-		border: none;
-		border-radius: 5px;
-		background: var(--accent-color);
-		color: var(--bg-color);
+		border: 1px solid var(--line-strong);
+		background: transparent;
+		color: var(--text-color);
+		padding: 10px 14px;
 		cursor: pointer;
-		transition: transform 0.2s;
+		transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 	}
 
 	.search-form button:hover,
 	.controls button:hover,
-	.toggle-button:hover,
-	.preset-theme:hover,
 	.modal-buttons button:hover {
-		transform: scale(var(--btn-hover-scale));
+		transform: translateY(-1px);
+		border-color: var(--accent-color);
+		color: var(--accent-color);
+		background: var(--hover-bg);
 	}
 
 	.search-form button:disabled {
-		opacity: 0.7;
-		cursor: not-allowed;
+		opacity: 0.6;
+		cursor: wait;
 		transform: none;
 	}
 
 	.loader {
 		display: none;
-		border: 5px solid #f3f3f3;
-		border-top: 5px solid var(--accent-color);
-		border-radius: 50%;
-		width: 30px;
-		height: 30px;
-		animation: spin 2s linear infinite;
-		margin: 10px auto 0 auto;
+		width: 24px;
+		height: 24px;
+		border-radius: 999px;
+		border: 2px solid var(--spinner-track);
+		border-top-color: var(--accent-color);
+		animation: spin 0.85s linear infinite;
+		justify-self: center;
 	}
 
 	.loader.visible {
 		display: block;
 	}
 
-	@keyframes spin {
-		from {
-			transform: rotate(0deg);
-		}
-		to {
-			transform: rotate(360deg);
-		}
-	}
-
-	.theme-section {
-		background: var(--container-bg);
-		border-radius: 5px;
-		padding: 15px;
-		margin: 20px 0;
-	}
-
-	.theme-section.collapsed .theme-content {
-		display: none;
-	}
-
-	.theme-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.theme-controls {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 15px;
-		margin-top: 15px;
-	}
-
-	.theme-control {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-	}
-
-	.theme-control label {
-		margin-bottom: 8px;
-	}
-
-	.theme-control input {
-		width: 40px;
-		height: 40px;
-		border: none;
-		background: none;
-		cursor: pointer;
-	}
-
-	.preset-themes {
-		display: flex;
-		justify-content: center;
-		gap: 10px;
-		flex-wrap: wrap;
-		margin-top: 15px;
+	.controls-panel {
+		padding-bottom: 14px;
 	}
 
 	.controls {
-		margin: 20px 0;
-		text-align: center;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
 	}
 
-	.controls button {
-		margin: 0 5px;
+	#tier-list {
+		padding: 12px;
+		display: grid;
+		gap: 12px;
+	}
+
+	#tier-list + .section-heading {
+		margin-top: 26px;
 	}
 
 	.tier {
-		display: flex;
-		margin-bottom: 10px;
-		min-height: 120px;
+		display: grid;
+		grid-template-columns: 34px 120px minmax(0, 1fr);
+		min-height: 136px;
+		border: 1px solid var(--line-color);
+		background: var(--container-bg-alt);
 	}
 
 	.tier-actions {
 		display: flex;
 		flex-direction: column;
-		margin-right: 10px;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		padding: 10px 0;
+		border-right: 1px solid var(--line-color);
+		background: var(--tier-actions-bg);
 	}
 
 	.tier-action-btn {
-		width: 30px;
-		height: 30px;
-		margin-bottom: 5px;
-		border: none;
-		border-radius: 3px;
-		background: var(--container-bg);
+		width: 23px;
+		height: 23px;
+		border: 1px solid var(--line-strong);
+		background: transparent;
 		color: var(--text-color);
 		cursor: pointer;
+		font-size: 13px;
+		line-height: 1;
 	}
 
-	.tier-action-btn.delete {
-		background: #8b3a3a;
+	.tier-action-btn:hover {
+		border-color: var(--accent-color);
+		color: var(--accent-color);
+	}
+
+	.tier-action-btn.delete:hover {
+		border-color: #d34f4f;
+		color: #d34f4f;
 	}
 
 	.tier-label {
-		width: 120px;
-		margin-right: 10px;
 		border: none;
-		border-radius: 5px;
+		border-right: 1px solid var(--line-color);
 		cursor: pointer;
-		font-weight: bold;
-		line-height: 1.05;
+		font-weight: 700;
+		line-height: 1;
 		word-break: break-word;
+		padding: 12px;
+		text-transform: uppercase;
 	}
 
 	.tier-items,
 	.game-pool {
-		flex: 1;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 10px;
-		border-radius: 5px;
-		padding: 10px;
+		gap: 12px;
+		padding: 12px;
+		align-content: flex-start;
 	}
 
 	.tier-items {
-		background: var(--container-bg-alt);
-		min-height: 120px;
+		min-height: 134px;
+		background: var(--container-bg-lite);
 	}
 
 	.game-pool {
-		background: var(--container-bg-lite);
-		min-height: 140px;
+		min-height: 150px;
+		background: var(--container-bg);
 	}
 
 	.tier-items.drag-over,
 	.game-pool.drag-over {
 		background: var(--hover-bg);
+		border-color: var(--accent-color);
 	}
 
 	.modal {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(15, 15, 15, 0.58);
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		padding: 14px;
 		z-index: 1000;
 	}
 
 	.modal-content {
-		width: 350px;
-		max-width: 95vw;
-		padding: 20px;
-		border-radius: 5px;
+		width: min(390px, 96vw);
+		padding: 18px;
+		border: 1px solid var(--line-strong);
 		background: var(--container-bg);
 	}
 
 	.modal-title {
-		color: var(--accent-color);
-		text-align: center;
-		margin-bottom: 15px;
+		margin-bottom: 14px;
+		font-size: 24px;
+		font-family: var(--display-font);
+		line-height: 1;
 	}
 
 	.form-group {
-		margin-bottom: 15px;
-		text-align: center;
+		margin-bottom: 14px;
 	}
 
+	.form-group label,
 	.field-label {
-		margin-bottom: 5px;
+		display: block;
+		margin-bottom: 6px;
+		font-size: 13px;
 	}
 
 	.form-group input {
-		width: 80%;
-		margin: 0 auto;
-		padding: 8px;
-		border-radius: 3px;
-		border: 1px solid var(--accent-color);
-		background: var(--bg-color);
-		color: #fff;
-		text-align: center;
-		display: block;
+		width: 100%;
+		padding: 9px 10px;
+		border: 1px solid var(--line-strong);
+		background: var(--input-bg);
+		color: var(--text-color);
+	}
+
+	.form-group input[type='file'] {
+		padding: 6px;
+	}
+
+	.form-group input[type='file']::file-selector-button,
+	.form-group input[type='file']::-webkit-file-upload-button {
+		border: 1px solid var(--line-strong);
+		background: transparent;
+		color: var(--text-color);
+		padding: 7px 10px;
+		margin-right: 10px;
+		cursor: pointer;
+		font: inherit;
+		transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+	}
+
+	.form-group input[type='file']::file-selector-button:hover,
+	.form-group input[type='file']::-webkit-file-upload-button:hover {
+		border-color: var(--accent-color);
+		color: var(--accent-color);
+		background: var(--hover-bg);
 	}
 
 	.rgb-inputs {
-		display: flex;
-		justify-content: center;
-		gap: 10px;
-	}
-
-	.rgb-input input {
-		width: 60px;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 8px;
 	}
 
 	.color-preview {
-		width: 100px;
-		height: 50px;
-		margin: 10px auto;
-		border-radius: 5px;
-		border: 2px solid var(--accent-color);
+		width: 100%;
+		height: 42px;
+		margin-top: 10px;
+		border: 1px solid var(--line-strong);
 	}
 
 	.preset-colors {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 8px;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 7px;
 		margin-top: 10px;
 	}
 
 	.preset-color {
 		height: 30px;
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		border-radius: 3px;
+		border: 1px solid rgba(0, 0, 0, 0.2);
 		cursor: pointer;
 	}
 
 	.modal-buttons {
 		display: flex;
-		justify-content: center;
-		gap: 20px;
+		justify-content: flex-end;
+		gap: 9px;
 	}
 
 	.image-preview-wrap {
 		margin-top: 10px;
-		padding: 5px;
-		border-radius: 5px;
-		background: rgba(0, 0, 0, 0.2);
+		padding: 7px;
+		border: 1px dashed var(--line-strong);
+		background: var(--container-bg-lite);
 	}
 
 	.image-preview {
 		max-width: 100%;
 		max-height: 150px;
-		border-radius: 5px;
+		display: block;
 	}
 
-	@media (max-width: 900px) {
-		.search-form input {
-			display: block;
-			width: 100% !important;
-			margin: 0 0 10px 0;
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes page-in {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.container,
+		.loader {
+			animation: none;
 		}
 
-		.theme-controls {
-			grid-template-columns: repeat(2, 1fr);
+		.search-form button,
+		.controls button,
+		.modal-buttons button {
+			transition: none;
+		}
+	}
+
+	@media (max-width: 1000px) {
+		.search-form {
+			grid-template-columns: 1fr 120px;
 		}
 
-		.controls button {
-			margin: 5px;
+		.search-form button {
+			grid-column: 1 / -1;
+		}
+
+		.loader {
+			grid-column: 1 / -1;
+		}
+	}
+
+	@media (max-width: 860px) {
+		.tier {
+			grid-template-columns: 34px 92px minmax(0, 1fr);
+		}
+	}
+
+	@media (max-width: 700px) {
+		:global(body) {
+			padding: 14px 10px 34px;
+		}
+
+		.section-heading {
+			font-size: 26px;
+		}
+
+		.search-form {
+			grid-template-columns: 1fr;
+		}
+
+		.tier {
+			grid-template-columns: 1fr;
+		}
+
+		.tier-actions {
+			flex-direction: row;
+			justify-content: flex-start;
+			padding: 8px 10px;
+			border-right: none;
+			border-bottom: 1px solid var(--line-color);
+		}
+
+		.tier-label {
+			border-right: none;
+			border-bottom: 1px solid var(--line-color);
+			min-height: 72px;
 		}
 	}
 </style>

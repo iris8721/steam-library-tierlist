@@ -14,13 +14,6 @@ export interface Tier {
 	gameIds: string[];
 }
 
-export interface Theme {
-	bgColor: string;
-	textColor: string;
-	accentColor: string;
-	containerBg: string;
-}
-
 export type StatusType = 'normal' | 'error' | 'success';
 
 export interface StatusMessage {
