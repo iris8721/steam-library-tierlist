@@ -18,8 +18,8 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-if not exist "server.js" (
-    echo Error: server.js not found in the current directory.
+if not exist "svelte.config.js" (
+    echo Error: svelte.config.js not found in the current directory.
     echo https://github.com/iris872/steam-library-tierlist
     pause
     exit /b 1
@@ -65,8 +65,8 @@ if not exist "node_modules\" (
     )
 )
 
-echo Server starting...
-start "Steam Tier List Server" cmd /k "node server.js"
+echo App starting...
+start "Steam Tier List Server" cmd /k "npm start"
 
 timeout /t 3 /nobreak > nul
 echo Opening application in browser...

@@ -1,4 +1,4 @@
-# Steam Library Tier List
+# Steam Library Tier List (SvelteKit + TypeScript)
 
 A web application that allows you to create tier lists for your Steam games library.
 
@@ -23,17 +23,25 @@ A web application that allows you to create tier lists for your Steam games libr
    ```
    If you don't have a Steam API key, you can get one at https://steamcommunity.com/dev/apikey
 
-4. Run the application:
+4. Build + run the application:
    ```
    npm start
    ```
-   
-5. Or use the included batch file:
+
+   This builds the SvelteKit app and starts the Node adapter server on `http://localhost:3000`.
+
+5. For local development with hot reload:
+   ```
+   npm run dev
+   ```
+   The app and API route run together on `http://localhost:5173`.
+
+6. Or use the included batch file:
    ```
    click_me.bat
    ```
 
-6. Open your browser and navigate to http://localhost:3000
+7. Open your browser and navigate to `http://localhost:3000`
 
 ## How to Use
 
@@ -51,6 +59,12 @@ A web application that allows you to create tier lists for your Steam games libr
 - A Steam account with public game data
 - A Steam API key
 
+## Tech Stack
+
+- SvelteKit + Svelte 5
+- TypeScript
+- API route at `src/routes/api/games/+server.ts`
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.

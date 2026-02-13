@@ -2,10 +2,14 @@
   "name": "steam-game-tier-list",
   "version": "1.0.0",
   "description": "Create tier lists for your Steam games library",
-  "main": "server.js",
+  "type": "module",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "npm run build && node build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "keywords": [
     "steam",
@@ -15,11 +19,15 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.6.2",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "html2canvas": "^1.4.1",
+    "svelte": "^5.39.3"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "@sveltejs/adapter-node": "^5.2.12",
+    "@sveltejs/kit": "^2.48.4",
+    "@types/node": "^24.4.0",
+    "svelte-check": "^4.3.1",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.5"
   }
 }
