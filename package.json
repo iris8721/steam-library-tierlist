@@ -1,5 +1,5 @@
 {
-  "name": "steam-game-tier-list",
+  "name": "steam-library-tierlist",
   "version": "1.0.0",
   "description": "Create tier lists for your Steam games library",
   "type": "module",
