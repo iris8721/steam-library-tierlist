@@ -16,7 +16,7 @@
     "games",
     "tier-list"
   ],
-  "author": "",
+  "author": "iris8721",
   "license": "MIT",
   "dependencies": {
     "html2canvas": "^1.4.1",
