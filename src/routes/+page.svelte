@@ -365,23 +365,28 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		const cards = [...container.querySelectorAll<HTMLDivElement>('.game-card[data-game-id]')].filter(
 			(card) => card.dataset.gameId !== movingId
 		);
-		if (cards.length === 0) return 0;
+		const boxes = cards.map((card) => card.getBoundingClientRect());
 
-		const closest = cards.reduce(
-			(best, child) => {
-				const box = child.getBoundingClientRect();
-				const xOffset = x - (box.left + box.width / 2);
-				const yOffset = y - (box.top + box.height / 2);
-				const distance = Math.hypot(xOffset, yOffset);
-				if (xOffset > 0) return best;
-				if (distance < best.distance) return { element: child, distance };
-				return best;
-			},
-			{ element: null, distance: Number.POSITIVE_INFINITY }
-		);
+		let rowStart = 0;
+		while (rowStart < boxes.length) {
+			let rowEnd = rowStart;
+			let rowBottom = boxes[rowStart].bottom;
+			while (rowEnd + 1 < boxes.length && Math.abs(boxes[rowEnd + 1].top - boxes[rowStart].top) < 1) {
+				rowEnd++;
+				rowBottom = Math.max(rowBottom, boxes[rowEnd].bottom);
+			}
 
-		if (!closest.element) return cards.length;
-		return cards.findIndex((card) => card === closest.element);
+			if (y <= rowBottom) {
+				for (let i = rowStart; i <= rowEnd; i++) {
+					const box = boxes[i];
+					if (x < box.left + box.width / 2) return i;
+				}
+				return rowEnd + 1;
+			}
+			rowStart = rowEnd + 1;
+		}
+
+		return boxes.length;
 	}
 
 	function moveGameToZone(gameId: string, zone: string, index: number) {
@@ -449,12 +454,13 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 
 	function handleZoneDrop(event: DragEvent, zone: string) {
 		event.preventDefault();
-		const gameId = draggedGameId || event.dataTransfer?.getData('text/plain');
+		const gameId = event.dataTransfer?.getData('text/plain') || draggedGameId;
 		if (!gameId) return;
 		const container = event.currentTarget as HTMLElement | null;
 		if (!container) return;
 		const index = getDropIndex(container, event.clientX, event.clientY, gameId);
 		moveGameToZone(gameId, zone, index);
+		draggedGameId = '';
 		dragOverZone = '';
 	}
 
