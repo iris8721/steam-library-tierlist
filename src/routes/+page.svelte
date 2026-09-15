@@ -464,19 +464,22 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		dragOverZone = '';
 	}
 
-	async function waitForImages(container: HTMLElement) {
+	async function waitForImages(container: HTMLElement, timeoutMs = 10000) {
 		const imgs = [...container.querySelectorAll<HTMLImageElement>('img')];
-		await Promise.all(
-			imgs.map(
-				(img) =>
-					new Promise<void>((resolve) => {
-						if (img.complete) return resolve();
-						const done = () => resolve();
-						img.addEventListener('load', done, { once: true });
-						img.addEventListener('error', done, { once: true });
-					})
-			)
-		);
+		await Promise.race([
+			Promise.all(
+				imgs.map(
+					(img) =>
+						new Promise<void>((resolve) => {
+							if (img.complete) return resolve();
+							const done = () => resolve();
+							img.addEventListener('load', done, { once: true });
+							img.addEventListener('error', done, { once: true });
+						})
+				)
+			),
+			new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+		]);
 	}
 
 	async function saveTierListAsImage() {
@@ -562,7 +565,6 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 				backgroundColor: bgColor,
 				scale: 2,
 				useCORS: true,
-				allowTaint: true,
 			});
 
 			const link = document.createElement('a');
