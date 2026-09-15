@@ -14,13 +14,13 @@ rank your games on a drag-and-drop tier list, then export the result as a PNG.
 - Add, rename, recolor (RGB picker), reorder, and delete tiers.
 - Import custom entries with your own image, title, and playtime for games not in
   the library.
-- Game cards show capsule art, playtime, a Steam store link, and a tilt effect on
+- Game cards show capsule art, playtime, a Steam store link, and lift slightly on
   hover.
 - Export the tier list to PNG via `html2canvas` — renders an off-screen clone with
-  theme CSS variables inlined so the image matches the page.
+  theme CSS variables inlined so colors match the page.
 - `?steamid=` query param auto-loads a library on page load.
-- `/healthz` endpoint and hardened response headers (`hooks.server.ts`) for
-  deployment.
+- `/healthz` endpoint, hardened response headers (`hooks.server.ts`), a Content
+  Security Policy, and a per-IP rate limit on the API proxy for deployment.
 
 ## Setup
 
@@ -60,7 +60,10 @@ npm run check      # svelte-check type checking
 - No persistence — the tier list lives in memory and is lost on refresh.
 - Steam only returns games for profiles with public game details.
 - Export fidelity depends on `html2canvas`; complex CSS may render slightly
-  differently than on screen.
+  differently than on screen, and the web fonts loaded via `@import` fall back to
+  the system monospace font in the exported PNG.
+- The rate limit is in-process, so it resets on restart and isn't shared across
+  instances.
 
 ## License
 
