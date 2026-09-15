@@ -39,7 +39,11 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		'#999999',
 	];
 
-	const extraTiers: Array<{ name: string; color: string }> = [
+	const tierDefaults: Array<{ name: string; color: string }> = [
+		{ name: 'S', color: '#ff7f7f' },
+		{ name: 'A', color: '#ffbf7f' },
+		{ name: 'B', color: '#ffdf7f' },
+		{ name: 'C', color: '#bfff7f' },
 		{ name: 'D', color: '#7fff7f' },
 		{ name: 'E', color: '#7fffbf' },
 		{ name: 'F', color: '#7fbfff' },
@@ -53,12 +57,7 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 	let status: StatusMessage | null = null;
 	let statusTimer: ReturnType<typeof setTimeout> | null = null;
 
-	let tiers: Tier[] = [
-		{ id: 'tier-s', name: 'S', color: '#ff7f7f', gameIds: [] },
-		{ id: 'tier-a', name: 'A', color: '#ffbf7f', gameIds: [] },
-		{ id: 'tier-b', name: 'B', color: '#ffdf7f', gameIds: [] },
-		{ id: 'tier-c', name: 'C', color: '#bfff7f', gameIds: [] },
-	];
+	let tiers: Tier[] = tierDefaults.slice(0, 4).map((def) => ({ id: `tier-${def.name.toLowerCase()}`, name: def.name, color: def.color, gameIds: [] }));
 	let poolIds: string[] = [];
 	let gamesById: Record<string, Game> = {};
 
@@ -177,12 +176,12 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 	}
 
 	function addTier() {
-		if (tiers.length >= 9) {
+		if (tiers.length >= tierDefaults.length) {
 			setStatus('Maximum number of tiers reached!', 'error');
 			return;
 		}
-		const def = extraTiers[tiers.length - 4];
-		if (!def) return;
+		const used = new Set(tiers.map((tier) => tier.name.toUpperCase()));
+		const def = tierDefaults.find((candidate) => !used.has(candidate.name)) ?? tierDefaults[tiers.length];
 		tiers = [...tiers, { id: `tier-${Date.now()}-${def.name}`, name: def.name, color: def.color, gameIds: [] }];
 		setStatus(`Added tier ${def.name}`, 'success');
 	}
