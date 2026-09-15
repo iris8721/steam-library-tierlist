@@ -336,18 +336,21 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 			}
 
 			const idsInTiers = new Set(tiers.flatMap((tier) => tier.gameIds));
-			const customInPool = poolIds.filter((id) => gamesById[id]?.isCustom);
 			const nextGames = { ...gamesById };
-			const loadedPool: string[] = [];
+			const loadedIds = new Set<string>();
 
 			for (const game of filtered) {
 				const id = String(game.appid);
 				nextGames[id] = { id, appid: game.appid, name: game.name, playtime: Number(game.playtime) || 0, isCustom: false, imageData: '' };
-				if (!idsInTiers.has(id)) loadedPool.push(id);
+				loadedIds.add(id);
 			}
 
+			const keptPool = poolIds.filter((id) => gamesById[id]?.isCustom || loadedIds.has(id));
+			const keptSet = new Set(keptPool);
+			const addedPool = [...loadedIds].filter((id) => !idsInTiers.has(id) && !keptSet.has(id));
+
 			gamesById = nextGames;
-			poolIds = [...new Set([...customInPool, ...loadedPool])];
+			poolIds = [...keptPool, ...addedPool];
 			setStatus(`Loaded ${filtered.length} games with ${minHours}+ hours (${loadedGames.length} total)`, 'success');
 		} catch (error) {
 			setStatus(`Error: ${error instanceof Error ? error.message : 'Failed to load games'}`, 'error');
