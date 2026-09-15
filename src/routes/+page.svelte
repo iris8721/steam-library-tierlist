@@ -149,6 +149,10 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		return `tier:${tierId}`;
 	}
 
+	function focusOnMount(node: HTMLElement) {
+		node.focus();
+	}
+
 	function openEditTier(index: number) {
 		const tier = tiers[index];
 		if (!tier) return;
@@ -678,6 +682,7 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
+		use:focusOnMount
 		on:click|self={closeEditTier}
 		on:keydown={(event) => event.key === 'Escape' && closeEditTier()}
 	>
@@ -741,6 +746,7 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
+		use:focusOnMount
 		on:click|self={closeCustomGameModal}
 		on:keydown={(event) => event.key === 'Escape' && closeCustomGameModal()}
 	>
