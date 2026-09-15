@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 interface SteamGame {
 	appid: number;
 	name: string;
-	playtime_forever: number;
+	playtime_forever?: number;
 }
 
 interface ResolveVanityApiResponse {
@@ -111,13 +111,13 @@ export const GET: RequestHandler = async ({ url }) => {
 		const games: GameDto[] = response.response.games.map((game) => ({
 			appid: game.appid,
 			name: game.name || `App ${game.appid}`,
-			playtime: Math.round(game.playtime_forever / 60),
+			playtime: Math.round((game.playtime_forever || 0) / 60),
 		}));
 
 		games.sort((a, b) => a.name.localeCompare(b.name));
 		return jsonNoStore(games);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : 'Unknown error';
-		return jsonNoStore(toApiError(`Error fetching games from Steam API: ${message}`), 500);
+		console.error('Steam API request failed:', error);
+		return jsonNoStore(toApiError('Error fetching games from Steam API'), 500);
 	}
 };
