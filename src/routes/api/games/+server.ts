@@ -36,8 +36,33 @@ const noStoreHeaders = {
 	'cache-control': 'no-store',
 };
 
+const rateLimitWindowMs = 60_000;
+const rateLimitMax = 20;
+const requestLog = new Map<string, number[]>();
+
 function isValidSteamId(value: string): boolean {
 	return /^\d{17}$/.test(value);
+}
+
+function isValidVanity(value: string): boolean {
+	return /^[a-zA-Z0-9_-]{2,32}$/.test(value);
+}
+
+function isRateLimited(ip: string): boolean {
+	const now = Date.now();
+	const recent = (requestLog.get(ip) ?? []).filter((t) => now - t < rateLimitWindowMs);
+	if (recent.length >= rateLimitMax) {
+		requestLog.set(ip, recent);
+		return true;
+	}
+	recent.push(now);
+	requestLog.set(ip, recent);
+	if (requestLog.size > 1000) {
+		for (const [key, times] of requestLog) {
+			if (times.every((t) => now - t >= rateLimitWindowMs)) requestLog.delete(key);
+		}
+	}
+	return false;
 }
 
 function toApiError(message: string): ApiErrorBody {
@@ -69,8 +94,12 @@ async function fetchJson<T>(url: string): Promise<T> {
 	}
 }
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, getClientAddress }) => {
 	try {
+		if (isRateLimited(getClientAddress())) {
+			return jsonNoStore(toApiError('Too many requests, try again in a minute'), 429);
+		}
+
 		const steamApiKey = env.STEAM_API_KEY?.trim() ?? '';
 		if (!steamApiKey) {
 			return jsonNoStore(toApiError('Steam API key is not configured on the server'), 500);
@@ -80,6 +109,9 @@ export const GET: RequestHandler = async ({ url }) => {
 		const vanityUrl = url.searchParams.get('vanity')?.trim() ?? '';
 
 		if (vanityUrl && !steamId) {
+			if (!isValidVanity(vanityUrl)) {
+				return jsonNoStore(toApiError('Vanity URL must be 2-32 letters, numbers, dashes, or underscores'), 400);
+			}
 			const resolveUrl = `https://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${steamApiKey}&vanityurl=${encodeURIComponent(vanityUrl)}`;
 			const response = await fetchJson<ResolveVanityApiResponse>(resolveUrl);
 
