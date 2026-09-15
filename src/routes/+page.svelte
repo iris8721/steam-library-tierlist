@@ -830,6 +830,11 @@ import type { Game, StatusMessage, Tier } from '$lib/types';
 		-webkit-user-select: none;
 	}
 
+	:global(input) {
+		user-select: text;
+		-webkit-user-select: text;
+	}
+
 	:global(body) {
 		margin: 0;
 		padding: 24px 16px 60px;
